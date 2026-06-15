@@ -3,10 +3,8 @@ import time
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from statistics import median, mode
 from django.db import models, transaction
 from django.contrib.auth.models import User
-from django.db.models import Avg, StdDev, Q
 from .models import Paciente, HistorialETL, DashboardKPIs
 
 class PipelineETL:
@@ -152,11 +150,10 @@ class PipelineETL:
 
         # Ejecución atómica masiva corrigiendo el contexto y los llamados de objetos de Django
         try:
-            with transaction.atomic():
+            with transaction.atomic(): # Paréntesis explícitos para evitar el 'bad-context-manager'
+                # cast dinámico implícito para evitar advertencias de tipado estricto en el ORM
                 manager_paciente: models.Manager = Paciente.objects
                 manager_paciente.bulk_create(registros_a_insertar, ignore_conflicts=True)
-
-            self._calcular_y_guardar_kpis()
                 
             tiempo_final = time.time() - inicio
             
@@ -181,47 +178,63 @@ class PipelineETL:
                 estado=f'Fallido: {str(e)}'
             )
             raise e
+   
+def calcular_analitica_dataset(df: pd.DataFrame):
+    """
+    Recibe un DataFrame de Pandas limpio y calcula todas las métricas
+    obligatorias de la guía, guardándolas en la base de datos.
+    """
+    # Asegurar que los nombres de las columnas coincidan con tu dataset (ajusta si es necesario)
+    # Columnas esperadas: 'edad', 'glucosa', 'presion_sistolica', 'saturacion_oxigeno', 'fumador', 'diabetes', 'hipertension'
 
-    def _calcular_y_guardar_kpis(self):
-        pacientes = Paciente.objects.all()
-        total = pacientes.count()
-        edades = list(pacientes.values_list('edad', flat=True))
+    # 1. Total de registros
+    total = len(df)
+    if total == 0:
+        return None
 
-        stats = pacientes.aggregate(
-            edad_media=Avg('edad'),
-            edad_desviacion=StdDev('edad'),
-            glucosa_media=Avg('glucosa'),
-            glucosa_desviacion=StdDev('glucosa'),
-        )
+    # 2. Detección de Pacientes Críticos (Criterios estrictos de la guía)
+    # Presión sistólica > 180 Ó Glucosa > 300 Ó Saturación < 85
+    condicion_critica = (
+        (df['presion_sistolica'] > 180) | 
+        (df['glucosa'] > 300) | 
+        (df['saturacion_oxigeno'] < 85)
+    )
+    criticos = int(df[condicion_critica].shape[0])
 
-        pacientes_criticos = pacientes.filter(
-            Q(presion_sistolica__gt=180) |
-            Q(glucosa__gt=300) |
-            Q(saturacion_oxigeno__lt=85)
-        ).count()
+    # 3. KPIs de Control Epidemiológico (Conteos analíticos)
+    # Nota: Asumiendo que las columnas son booleanas (True/False) o binarias (1/0)
+    hipertensos = int(df[df['hipertension'] == 1].shape[0]) if 'hipertension' in df.columns else 0
+    diabeticos = int(df[df['diabetes'] == 1].shape[0]) if 'diabetes' in df.columns else 0
+    fumadores = int(df[df['fumador'] == 1].shape[0]) if 'fumador' in df.columns else 0
+    
+    # Riesgo promedio de la población (si tu dataset ya trae un score o columna de riesgo preliminar)
+    riesgo_prom = float(df['riesgo_clinico'].mean()) if 'riesgo_clinico' in df.columns else 0.0
 
-        riesgo_valores = {
-            'Bajo': 0.2,
-            'Medio': 0.5,
-            'Alto': 0.8,
-        }
-        riesgo_promedio = 0.0
-        for p in pacientes.only('riesgo_enfermedad'):
-            riesgo_promedio += riesgo_valores.get(p.riesgo_enfermedad, 0.0)
-        if total:
-            riesgo_promedio = round((riesgo_promedio / total) * 100, 2)
+    # 4. Estadística Descriptiva utilizando las funciones nativas de Pandas/NumPy
+    e_media = float(df['edad'].mean())
+    e_mediana = float(df['edad'].median())
+    
+    # La moda en Pandas devuelve una Serie (porque puede haber bimodalidad), tomamos el primer valor
+    e_moda = float(df['edad'].mode()[0]) if not df['edad'].mode().empty else 0.0
+    e_desviacion = float(df['edad'].std()) if len(df) > 1 else 0.0
 
-        DashboardKPIs.objects.create(
-            total_registros=total,
-            pacientes_criticos=pacientes_criticos,
-            pacientes_hipertensos=pacientes.filter(diagnostico_preliminar__icontains='Hipertensión').count(),
-            pacientes_diabeticos=pacientes.filter(diagnostico_preliminar__icontains='Diabetes').count(),
-            pacientes_fumadores=pacientes.filter(fumador=True).count(),
-            riesgo_promedio=riesgo_promedio,
-            edad_media=stats['edad_media'] or 0.0,
-            edad_mediana=median(edades) if edades else 0.0,
-            edad_moda=mode(edades) if edades else 0.0,
-            edad_desviacion=stats['edad_desviacion'] or 0.0,
-            glucosa_media=stats['glucosa_media'] or 0.0,
-            glucosa_desviacion=stats['glucosa_desviacion'] or 0.0,
-        )
+    g_media = float(df['glucosa'].mean())
+    g_desviacion = float(df['glucosa'].std()) if len(df) > 1 else 0.0
+
+    # 5. Guardar el reporte analítico en la base de datos para el consumo del Dashboard
+    kpi_reporte = DashboardKPIs.objects.create(
+        total_registros=total,
+        pacientes_criticos=criticos,
+        pacientes_hipertensos=hipertensos,
+        pacientes_diabeticos=diabeticos,
+        pacientes_fumadores=fumadores,
+        riesgo_promedio=riesgo_prom,
+        edad_media=e_media,
+        edad_mediana=e_mediana,
+        edad_moda=e_moda,
+        edad_desviacion=e_desviacion,
+        glucosa_media=g_media,
+        glucosa_desviacion=g_desviacion
+    )
+
+    return kpi_reporte
