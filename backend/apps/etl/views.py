@@ -73,7 +73,7 @@ class RunETLView(APIView):
         archivo_subido = request.FILES['file']
 
         try:
-            upload_dir = '/app/temp_uploads'
+            upload_dir = 'temp_uploads/'
             os.makedirs(upload_dir, exist_ok=True)
 
             ext = os.path.splitext(archivo_subido.name)[1] or '.csv'
