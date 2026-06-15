@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+
+{% block title %}Analítica Descriptiva | VITA Clinical{% endblock %}
+
+{% block content %}
+<style>
+    .metric-row td { vertical-align: middle; }
+    .metric-row td:first-child { font-weight: 600; color: var(--clia-jacarta); white-space: nowrap; }
+    .progress-thin { height: 8px; border-radius: 4px; }
+    .table-analitica th { font-size: 0.75rem; text-align: center; white-space: nowrap; background-color: var(--clia-jacarta); color: #fff; }
+    .table-analitica td { font-size: 0.8rem; text-align: center; }
+    .table-analitica td:first-child { text-align: left; }
+</style>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
+            <div>
+                <h2 class="fw-bold m-0" style="font-family: 'Epilogue'; color: #fff; font-size: 1.5rem;">
+                    <i class="fa-solid fa-chart-bar me-2"></i> Análisis Estadístico Descriptivo
+                </h2>
+                <p class="m-0 mt-1" style="opacity: 0.8; font-size: 0.95rem;">
+                    Prevalencia de patologías, matriz de métricas clínicas y distribución por sexo
+                </p>
+            </div>
+            <button class="btn btn-clia-refresh shadow-sm" id="btn-refresh-analitica">
+                <i class="fa-solid fa-arrows-rotate me-2"></i> Actualizar
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="analitica-loading" class="text-center py-5">
+    <i class="fa-solid fa-circle-notch fa-spin fa-3x mb-3" style="color: var(--clia-jacarta);"></i>
+    <p class="text-muted">Calculando estadísticas con Pandas...</p>
+</div>
+
+<div id="analitica-content" class="d-none">
+
+    <!-- Bloque 1: Prevalencia -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+                    <i class="fa-solid fa-disease me-2 text-danger"></i> Indicadores de Prevalencia Patológica
+                </h5>
+                <div class="row g-3" id="prevalencia-container">
+                    <div class="col-12 text-center text-muted py-3">Cargando...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bloque 2: Matriz Descriptiva -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+                    <i class="fa-solid fa-table me-2 text-primary"></i> Matriz Descriptiva de Variables Biomédicas Continuas
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle mb-0 table-analitica">
+                        <thead>
+                            <tr id="matriz-headers"></tr>
+                        </thead>
+                        <tbody id="matriz-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bloque 3: Distribuciones Clínicas -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+                    <i class="fa-solid fa-weight-scale me-2 text-success"></i> Distribución del IMC Poblacional
+                </h5>
+                <div id="imc-dist-container">
+                    <p class="text-muted text-center py-3">Cargando...</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+                    <i class="fa-solid fa-venus-mars me-2 text-info"></i> Comorbilidades por Sexo
+                </h5>
+                <div id="comorbilidad-container">
+                    <p class="text-muted text-center py-3">Cargando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.getElementById('nav-analitica')?.classList.add('active');
+
+    document.addEventListener("DOMContentLoaded", cargarAnalitica);
+    document.getElementById('btn-refresh-analitica')?.addEventListener('click', cargarAnalitica);
+
+    const labelsMetrica = {
+        count: 'Count', mean: 'Media', median: 'Mediana', mode: 'Moda',
+        std: 'Desv. Estándar', min: 'Mínimo', max: 'Máximo', p25: 'P25', p75: 'P75'
+    };
+
+    async function cargarAnalitica() {
+        const token = localStorage.getItem('token_acceso');
+        if (!token) return;
+
+        document.getElementById('analitica-loading').classList.remove('d-none');
+        document.getElementById('analitica-content').classList.add('d-none');
+
+        try {
+            const response = await fetch('/api/analytics/descriptiva/', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.status === 'success') {
+                    renderizarPrevalencia(data.prevalencia_patologias);
+                    renderizarMatriz(data.matriz_descriptiva, data.etiquetas_columnas);
+                    renderizarDistribucionIMC(data.distribucion_imc);
+                    renderizarComorbilidad(data.comorbilidad_sexo);
+                    document.getElementById('analitica-content').classList.remove('d-none');
+                }
+            } else {
+                document.getElementById('analitica-loading').innerHTML = `
+                    <div class="alert alert-danger">Error al cargar los datos analíticos.</div>
+                `;
+            }
+        } catch (error) {
+            console.error("Error cargando analítica:", error);
+            document.getElementById('analitica-loading').innerHTML = `
+                <div class="alert alert-danger">Error de conexión con el servidor.</div>
+            `;
+        } finally {
+            document.getElementById('analitica-loading').classList.add('d-none');
+        }
+    }
+
+    function renderizarPrevalencia(prevalencia) {
+        const container = document.getElementById('prevalencia-container');
+        if (!prevalencia || !prevalencia.total_pacientes) {
+            container.innerHTML = '<p class="text-muted text-center">No hay datos disponibles.</p>';
+            return;
+        }
+
+        const items = [
+            { key: 'hipertensos', label: 'Hipertensión Arterial', color: 'danger', icon: 'fa-solid fa-heart-pulse' },
+            { key: 'diabeticos', label: 'Diabetes Mellitus', color: 'warning', icon: 'fa-solid fa-droplet' },
+            { key: 'fumadores', label: 'Tabaquismo Activo', color: 'secondary', icon: 'fa-solid fa-smoking' },
+        ];
+
+        container.innerHTML = items.map(item => {
+            const d = prevalencia[item.key] || { cantidad: 0, proporcion: 0 };
+            return `
+                <div class="col-md-4">
+                    <div class="p-3 rounded bg-${item.color} bg-opacity-10 h-100">
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <div class="fs-2 text-${item.color}"><i class="${item.icon}"></i></div>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-${item.color}">${item.label}</h6>
+                                <small class="text-muted">${d.cantidad} de ${prevalencia.total_pacientes} pacientes</small>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-bold" style="font-size: 1.2rem;">${d.proporcion}%</span>
+                            </div>
+                            <div class="progress progress-thin">
+                                <div class="progress-bar bg-${item.color}" role="progressbar" style="width: ${Math.min(d.proporcion, 100)}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderizarMatriz(matriz, etiquetas) {
+        const headersRow = document.getElementById('matriz-headers');
+        const body = document.getElementById('matriz-body');
+
+        const columnas = Object.keys(matriz);
+        if (columnas.length === 0) {
+            body.innerHTML = '<tr><td colspan="10" class="text-center text-muted">No hay datos numéricos disponibles.</td></tr>';
+            return;
+        }
+
+        headersRow.innerHTML = '<th class="text-start">Métrica Estadística</th>';
+        columnas.forEach(col => {
+            headersRow.innerHTML += `<th>${(etiquetas && etiquetas[col]) || col.replace(/_/g, ' ')}</th>`;
+        });
+
+        const metricas = ['count', 'mean', 'median', 'mode', 'std', 'min', 'max', 'p25', 'p75'];
+        body.innerHTML = metricas.map(metrica => {
+            let row = `<tr class="metric-row"><td>${labelsMetrica[metrica] || metrica}</td>`;
+            columnas.forEach(col => {
+                const val = matriz[col][metrica];
+                row += `<td>${val !== undefined && val !== null ? val : '—'}</td>`;
+            });
+            row += '</tr>';
+            return row;
+        }).join('');
+    }
+
+    function renderizarDistribucionIMC(distribucion) {
+        const container = document.getElementById('imc-dist-container');
+        if (!distribucion || distribucion.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center">No hay datos disponibles.</p>';
+            return;
+        }
+
+        const colores = { 'Bajo peso': '#a8dadc', 'Normal': '#4c9a2a', 'Sobrepeso': '#e9c46a', 'Obesidad': '#e76f51' };
+        const total = distribucion.reduce((s, d) => s + d.cantidad, 0);
+
+        let html = '<table class="table table-bordered align-middle mb-0" style="font-size: 0.85rem;">';
+        html += '<thead class="table-light"><tr><th>Clasificación</th><th class="text-center">Pacientes</th><th class="text-center">Porcentaje</th><th style="width: 40%;"></th></tr></thead><tbody>';
+        distribucion.forEach(d => {
+            const pct = total > 0 ? (d.cantidad / total * 100) : 0;
+            html += `
+                <tr>
+                    <td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${colores[d.clasificacion] || '#ccc'};margin-right:8px;"></span>${d.clasificacion}</td>
+                    <td class="text-center fw-bold">${d.cantidad}</td>
+                    <td class="text-center">${d.porcentaje}%</td>
+                    <td>
+                        <div class="progress progress-thin">
+                            <div class="progress-bar" role="progressbar" style="width:${Math.min(pct, 100)}%;background:${colores[d.clasificacion] || '#ccc'}"></div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+    }
+
+    function renderizarComorbilidad(comorbilidad) {
+        const container = document.getElementById('comorbilidad-container');
+        if (!comorbilidad || Object.keys(comorbilidad).length === 0) {
+            container.innerHTML = '<p class="text-muted text-center">No hay datos disponibles.</p>';
+            return;
+        }
+
+        let html = '<table class="table table-bordered align-middle mb-0" style="font-size: 0.85rem;">';
+        html += '<thead class="table-light"><tr><th>Patología / Condición</th><th class="text-center">Masculino</th><th class="text-center">Femenino</th><th class="text-center">Total</th></tr></thead><tbody>';
+        Object.keys(comorbilidad).forEach(pat => {
+            const d = comorbilidad[pat];
+            const total = (d.Masculino || 0) + (d.Femenino || 0);
+            html += `
+                <tr>
+                    <td>${pat}</td>
+                    <td class="text-center">${d.Masculino || 0}</td>
+                    <td class="text-center">${d.Femenino || 0}</td>
+                    <td class="text-center fw-bold">${total}</td>
+                </tr>
+            `;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+</script>
+{% endblock %}

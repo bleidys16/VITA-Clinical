@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Usuarios | VITA Clinical{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
+            <div>
+                <h2 class="fw-bold m-0" style="font-family: 'Epilogue'; color: #fff; font-size: 1.5rem;">
+                    <i class="fa-solid fa-user-gear me-2"></i> Gestión de Usuarios
+                </h2>
+                <p class="m-0 mt-1" style="opacity: 0.8; font-size: 0.95rem;">
+                    Administración de cuentas y roles del sistema
+                </p>
+            </div>
+            <button class="btn btn-clia-primary shadow-sm" onclick="abrirModalCrear()">
+                <i class="fa-solid fa-plus me-2"></i> Nuevo Usuario
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Activo</th>
+                        <th>Fecha Creación</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-usuarios-body">
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <i class="fa-solid fa-circle-notch fa-spin me-2"></i> Cargando usuarios...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Usuario -->
+<div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+            <div class="modal-header border-0" style="background: var(--clia-indigo-dark); color: #fff; border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-bold" id="modalUsuarioLabel"><i class="fa-solid fa-user me-2"></i> Nuevo Usuario</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="form-usuario">
+                    <input type="hidden" id="edit-user-id">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre de Usuario</label>
+                        <input class="form-control" id="u-username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <input type="email" class="form-control" id="u-email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Contraseña <small class="text-muted">(dejar vacío para no cambiar)</small></label>
+                        <input type="password" class="form-control" id="u-password" autocomplete="new-password">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Rol</label>
+                        <select class="form-select" id="u-rol">
+                            <option value="MEDICO">Médico</option>
+                            <option value="ANALISTA">Analista de Datos</option>
+                            <option value="ADMIN">Administrador</option>
+                        </select>
+                    </div>
+                    <div class="form-check mb-3" id="div-activo" style="display:none;">
+                        <input class="form-check-input" type="checkbox" id="u-activo" checked>
+                        <label class="form-check-label fw-bold">Usuario activo</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-clia-primary" id="btn-guardar-usuario" onclick="guardarUsuario()">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('nav-usuarios')?.classList.add('active');
+
+    document.addEventListener("DOMContentLoaded", cargarUsuarios);
+
+    async function cargarUsuarios() {
+        const token = localStorage.getItem('token_acceso');
+        const tbody = document.getElementById('tabla-usuarios-body');
+        try {
+            const response = await fetch('/api/etl/usuarios/', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const usuarios = await response.json();
+            tbody.innerHTML = usuarios.map(u => `
+                <tr>
+                    <td class="fw-bold">${u.id}</td>
+                    <td>${u.username}</td>
+                    <td>${u.email || '—'}</td>
+                    <td><span class="badge ${u.rol === 'ADMIN' ? 'bg-dark' : u.rol === 'ANALISTA' ? 'bg-info text-dark' : 'bg-primary'}">${u.rol}</span></td>
+                    <td>${u.is_active ? '<span class="text-success"><i class="fa-solid fa-check-circle"></i> Activo</span>' : '<span class="text-danger"><i class="fa-solid fa-xmark-circle"></i> Inactivo</span>'}</td>
+                    <td class="text-muted small">${new Date(u.date_joined).toLocaleDateString('es-CO')}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="abrirModalEditar(${u.id})" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="eliminarUsuario(${u.id})" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Error al cargar usuarios</td></tr>';
+        }
+    }
+
+    function abrirModalCrear() {
+        document.getElementById('modalUsuarioLabel').innerHTML = '<i class="fa-solid fa-user-plus me-2"></i> Nuevo Usuario';
+        document.getElementById('form-usuario').reset();
+        document.getElementById('edit-user-id').value = '';
+        document.getElementById('u-password').required = true;
+        document.getElementById('div-activo').style.display = 'none';
+        new bootstrap.Modal('#modalUsuario').show();
+    }
+
+    function abrirModalEditar(id) {
+        document.getElementById('modalUsuarioLabel').innerHTML = '<i class="fa-solid fa-user-pen me-2"></i> Editar Usuario';
+        document.getElementById('u-password').required = false;
+        document.getElementById('div-activo').style.display = 'block';
+        const row = document.querySelector(`#tabla-usuarios-body tr:nth-child(${id})`);
+        document.getElementById('edit-user-id').value = id;
+
+        const token = localStorage.getItem('token_acceso');
+        fetch('/api/etl/usuarios/', { headers: { 'Authorization': `Bearer ${token}` } })
+            .then(r => r.json())
+            .then(usuarios => {
+                const u = usuarios.find(x => x.id === id);
+                if (!u) return;
+                document.getElementById('u-username').value = u.username;
+                document.getElementById('u-email').value = u.email || '';
+                document.getElementById('u-password').value = '';
+                document.getElementById('u-rol').value = u.rol;
+                document.getElementById('u-activo').checked = u.is_active;
+                new bootstrap.Modal('#modalUsuario').show();
+            });
+    }
+
+    async function guardarUsuario() {
+        const token = localStorage.getItem('token_acceso');
+        const editId = document.getElementById('edit-user-id').value;
+        const payload = {
+            username: document.getElementById('u-username').value,
+            email: document.getElementById('u-email').value,
+            password: document.getElementById('u-password').value,
+            rol: document.getElementById('u-rol').value,
+        };
+        if (editId) payload.is_active = document.getElementById('u-activo').checked;
+
+        const btn = document.getElementById('btn-guardar-usuario');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-1"></i> Guardando...';
+
+        try {
+            let url, method;
+            if (editId) {
+                url = `/api/etl/usuarios/${editId}/update/`;
+                method = 'PUT';
+            } else {
+                url = '/api/etl/usuarios/create/';
+                method = 'POST';
+            }
+            const response = await fetch(url, {
+                method,
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                bootstrap.Modal.getInstance('#modalUsuario').hide();
+                await cargarUsuarios();
+            } else {
+                alert(data.error || 'Error al guardar');
+            }
+        } catch (error) {
+            alert('Error de conexión');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar';
+        }
+    }
+
+    async function eliminarUsuario(id) {
+        if (!confirm('¿Eliminar este usuario definitivamente?')) return;
+        const token = localStorage.getItem('token_acceso');
+        try {
+            const response = await fetch(`/api/etl/usuarios/${id}/delete/`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                await cargarUsuarios();
+            } else {
+                alert(data.error || 'Error al eliminar');
+            }
+        } catch (error) {
+            alert('Error de conexión');
+        }
+    }
+</script>
+{% endblock %}

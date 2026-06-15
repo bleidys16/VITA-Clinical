@@ -5,19 +5,21 @@
 {% block content %}
 <div class="container-fluid">
 
-    <div class="row align-items-center mb-4">
-        <div class="col">
-            <h1 style="font-weight: 800; font-size: 2.6rem; color: var(--clia-black-coffee); margin: 0;">
-                Vital Tracking in Healthcare Analytics
-            </h1>
-            <p class="text-muted m-0 mt-1" style="font-size: 1.1rem;">
-                Indicadores en tiempo real de VITA Clinical
-            </p>
-        </div>
-        <div class="col-auto">
-            <button class="btn btn-clia-refresh shadow-sm" id="btn-refresh-dashboard">
-                <i class="fa-solid fa-arrows-rotate me-2"></i>Actualizar Tablero
-            </button>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
+                <div>
+                    <h1 class="m-0" style="font-weight: 800; font-size: 1.8rem; color: #fff;">
+                        Vital Tracking in Healthcare Analytics
+                    </h1>
+                    <p class="m-0 mt-1" style="opacity: 0.8; font-size: 1rem;">
+                        Indicadores en tiempo real de VITA Clinical
+                    </p>
+                </div>
+                <button class="btn btn-clia-refresh shadow-sm" id="btn-refresh-dashboard">
+                    <i class="fa-solid fa-arrows-rotate me-2"></i>Actualizar Tablero
+                </button>
+            </div>
         </div>
     </div>
 
@@ -53,12 +55,12 @@
         <div class="col-12 col-sm-6 col-lg-3">
             <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="p-3 rounded-circle text-warning bg-warning bg-opacity-10">
-                        <i class="fa-solid fa-droplet fs-4"></i>
+                    <div class="p-3 rounded-circle text-info bg-info bg-opacity-10">
+                        <i class="fa-solid fa-cake-candles fs-4"></i>
                     </div>
                     <div>
-                        <span class="text-muted small d-block">Hipertensos / Diabéticos</span>
-                        <h3 class="fw-bold m-0" style="color: var(--clia-jacarta);" id="kpi-cronicos">0 / 0</h3>
+                        <span class="text-muted small d-block">Edad Promedio</span>
+                        <h3 class="fw-bold m-0" style="color: var(--clia-jacarta);" id="kpi-edad-promedio">0</h3>
                     </div>
                 </div>
             </div>
@@ -83,7 +85,7 @@
         <div class="col-12 col-lg-8">
             <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
                 <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
-                    <i class="fa-solid fa-chart-line me-2 text-primary"></i> Tendencias Clínicas: Glucosa vs Edad
+                    <i class="fa-solid fa-chart-line me-2 text-primary"></i> Tendencias Clínicas: TA Sistólica y Glucosa
                 </h5>
                 <div id="chart-lineas"></div>
             </div>
@@ -92,9 +94,36 @@
         <div class="col-12 col-lg-4">
             <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
                 <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
-                    <i class="fa-solid fa-chart-pie me-2" style="color: var(--clia-wisteria);"></i> Prevalencia de Riesgo
+                    <i class="fa-solid fa-chart-pie me-2" style="color: var(--clia-wisteria);"></i> Distribución de Riesgo
                 </h5>
-                <div id="chart-torta"></div>
+                <div id="chart-radar"></div>
+                <hr class="my-3">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="p-2 rounded" style="background: #f0fdf4;">
+                            <small class="text-muted d-block">Glucosa prom.</small>
+                            <strong id="ind-glucosa" style="color: var(--clia-jacarta);">—</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 rounded" style="background: #f8f4ff;">
+                            <small class="text-muted d-block">IMC prom.</small>
+                            <strong id="ind-imc" style="color: var(--clia-jacarta);">—</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 rounded" style="background: #fef2f2;">
+                            <small class="text-muted d-block">% Críticos</small>
+                            <strong id="ind-criticos" style="color: #dc2626;">—</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 rounded" style="background: #fff7ed;">
+                            <small class="text-muted d-block">% Riesgo Alto</small>
+                            <strong id="ind-alto" style="color: #ea580c;">—</strong>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -103,14 +132,14 @@
         <div class="col-12">
             <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
                 <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
-                    <i class="fa-solid fa-chart-column me-2 text-success"></i> Segmentación y Distribución Epidemiológica
+                    <i class="fa-solid fa-chart-column me-2 text-success"></i> Segmentación Patológica por Rangos de Edad
                 </h5>
                 <div id="chart-barras"></div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 mt-2">
+    <div class="row g-4 mt-2" id="dashboard-ml-section">
         <div class="col-12 col-md-5">
             <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
                 <h5 class="fw-bold mb-4" style="color: var(--clia-jacarta);">
@@ -149,11 +178,16 @@
 
     <script>
         document.getElementById('nav-dashboard').classList.add('active');
+        const rol = localStorage.getItem('usuario_rol');
+        if (rol === 'MEDICO') {
+            const mlSection = document.getElementById('dashboard-ml-section');
+            if (mlSection) mlSection.remove();
+        }
     </script>
 
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="/static/js/dashboard_render.js"></script>
+<script src="/static/js/dashboard_render.js?v=5"></script>
 {% endblock %}

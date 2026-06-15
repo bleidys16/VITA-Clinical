@@ -45,10 +45,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Apps del proyecto CLIA
+    # Apps del proyecto VITA Clinical
     'rest_framework',
     'rest_framework_simplejwt',
     'apps.etl',
+    'apps.analytics',
     'apps.frontend',
     'apps.machine_learning',
 ]
@@ -168,3 +169,11 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+
+# Configuración de Caché con Redis (compartido entre Django y Celery para logs ETL en vivo)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': env('CACHE_URL', default='redis://127.0.0.1:6379/1'),
+    }
+}

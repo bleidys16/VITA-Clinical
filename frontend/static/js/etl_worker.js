@@ -1,43 +1,28 @@
+let pollingInterval = null;
+
 document.addEventListener("DOMContentLoaded", function () {
-    // 1. Cargar el historial de logs automáticamente al abrir la pantalla
     cargarHistorialLogs();
 
-    // 2. Vincular la acción al botón de inicio del Pipeline
     const btnRunEtl = document.getElementById('btn-run-etl');
-    if (btnRunEtl) {
-        btnRunEtl.addEventListener('click', ejecutarPipelineETL);
-    }
+    if (btnRunEtl) btnRunEtl.addEventListener('click', ejecutarPipelineETL);
 
-    // 3. Vincular la acción al botón de restablecer datos
     const btnReset = document.getElementById('btn-reset-data');
-    if (btnReset) {
-        btnReset.addEventListener('click', resetearDataset);
-    }
+    if (btnReset) btnReset.addEventListener('click', resetearDataset);
 });
 
-// FUNCIÓN ASÍNCRONA PARA TRAER LOS LOGS DE AUDITORÍA DESDE EL BACKEND
 async function cargarHistorialLogs() {
     const tableBody = document.getElementById('etl-logs-table-body');
     if (!tableBody) return;
 
     try {
         const response = await fetch('/api/etl/logs/');
-
-        // Si el backend responde un 404 o un error porque la tabla de logs no existe aún (sistema nuevo)
-        if (!response.ok) {
-            mostrarTablaVacia(tableBody);
-            return;
-        }
+        if (!response.ok) { mostrarTablaVacia(tableBody); return; }
 
         const logs = await response.json();
         tableBody.innerHTML = '';
 
-        if (!logs || logs.length === 0) {
-            mostrarTablaVacia(tableBody);
-            return;
-        }
+        if (!logs || logs.length === 0) { mostrarTablaVacia(tableBody); return; }
 
-        // Iterar y pintar cada fila si existen datos
         logs.forEach(log => {
             const fechaFormateada = new Date(log.fecha_ejecucion).toLocaleString('es-CO');
             const estadoBadge = log.estado === 'Exitoso' || log.estado === 'Success'
@@ -57,12 +42,10 @@ async function cargarHistorialLogs() {
 
     } catch (error) {
         console.error("Error al renderizar la tabla de auditoría:", error);
-        // En lugar de romper la UI con un error crítico, asumimos un estado inicial sin cargas
         mostrarTablaVacia(tableBody);
     }
 }
 
-// Función auxiliar para mantener la consistencia visual del estado vacío
 function mostrarTablaVacia(contenedor) {
     contenedor.innerHTML = `
         <tr>
@@ -73,31 +56,19 @@ function mostrarTablaVacia(contenedor) {
         </tr>`;
 }
 
-// FUNCIÓN ASÍNCRONA PARA DISPARAR LA EJECUCIÓN CON PANDAS ENVIANDO EL CSV
 async function ejecutarPipelineETL() {
     const btn = document.getElementById('btn-run-etl');
     const fileInput = document.getElementById('fileInput');
-    const containerStatus = document.getElementById('etl-status-container');
-    const spinner = document.getElementById('etl-spinner');
-    const statusTitle = document.getElementById('etl-status-title');
-    const statusDesc = document.getElementById('etl-status-desc');
+    const loading = document.getElementById('etl-loading');
 
     if (!btn || !fileInput || fileInput.files.length === 0) {
-        alert("Por favor, selecciona un archivo CSV antes de iniciar el proceso.");
+        alert("Por favor, selecciona un archivo antes de iniciar el proceso.");
         return;
     }
 
-    // Bloquear controles inmediato
     btn.disabled = true;
-    // Dejamos el texto del botón fijo, la animación va en el contenedor de estado
+    loading.classList.remove('d-none');
 
-    containerStatus.classList.remove('d-none');
-    spinner.className = "fa-solid fa-gears fa-spin fs-2";
-    spinner.style.color = "var(--clia-jacarta)";
-    statusTitle.innerText = "Ejecutando Engine ETL...";
-    statusDesc.innerText = "Pandas está extrayendo, transformando y validando la calidad del archivo clínico...";
-
-    // Preparar el archivo físico para mandarlo por HTTP Multipart
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
 
@@ -112,11 +83,8 @@ async function ejecutarPipelineETL() {
             xhr.onload = function () {
                 try {
                     const d = JSON.parse(xhr.responseText);
-                    if (xhr.status >= 200 && xhr.status < 300 && (d.status === 'success' || d.status === 'Exitoso')) {
-                        resolve(d);
-                    } else {
-                        reject(new Error(d.message || 'Error en el servidor'));
-                    }
+                    if (xhr.status >= 200 && xhr.status < 300) resolve(d);
+                    else reject(new Error(d.message || 'Error en el servidor'));
                 } catch (e) {
                     reject(new Error('Respuesta inválida del servidor'));
                 }
@@ -129,29 +97,58 @@ async function ejecutarPipelineETL() {
             xhr.send(formData);
         });
 
-        spinner.className = "fa-solid fa-circle-check text-success fs-2";
-        spinner.style.color = "";
-        statusTitle.innerText = "¡Pipeline Finalizado!";
-        statusDesc.innerText = `Carga exitosa: ${data.total_procesados || data.registros_procesados || 0} registros clínico-analíticos guardados.`;
+        if (data.status === 'accepted') {
+            await esperarPipelineCompletado();
+        }
 
         fileInput.value = '';
         document.getElementById('file-info-container').classList.add('d-none');
-
         await cargarHistorialLogs();
 
     } catch (error) {
-        console.error("Error disparando el pipeline:", error);
-        spinner.className = "fa-solid fa-shield-virus text-danger fs-2";
-        spinner.style.color = "";
-        statusTitle.innerText = "Error en el Motor ETL";
-        statusDesc.innerText = error.message || "No se pudo establecer comunicación con el pipeline de datos.";
+        console.error("Error en el pipeline:", error);
+        alert("Error: " + error.message);
     } finally {
-        btn.disabled = true;
+        loading.classList.add('d-none');
+        btn.disabled = false;
         btn.innerHTML = `<i class="fa-solid fa-play me-2"></i> Iniciar Pipeline ETL`;
     }
 }
 
-// FUNCIÓN ASÍNCRONA PARA RESTABLECER EL DATASET (ELIMINAR DATOS)
+function esperarPipelineCompletado() {
+    return new Promise((resolve) => {
+        if (pollingInterval) clearInterval(pollingInterval);
+
+        const consoleEl = document.getElementById('etl-console');
+        if (consoleEl) consoleEl.innerHTML = '';
+
+        pollingInterval = setInterval(async () => {
+            try {
+                const token = localStorage.getItem('token_acceso');
+                const response = await fetch('/api/etl/status/', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (consoleEl && data.logs) {
+                    consoleEl.innerHTML = data.logs.map(l =>
+                        `<div><span style="color:#89b4fa;">[${l.fase}]</span> ${l.mensaje} <span class="text-muted">${l.detalle}</span></div>`
+                    ).join('');
+                    consoleEl.scrollTop = consoleEl.scrollHeight;
+                }
+
+                if (response.ok && !data.activo) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                    resolve();
+                }
+            } catch (err) {
+                console.error("Error polling ETL status:", err);
+            }
+        }, 1500);
+    });
+}
+
 async function resetearDataset() {
     const btnReset = document.getElementById('btn-reset-data');
     if (!btnReset) return;
@@ -162,18 +159,19 @@ async function resetearDataset() {
     btnReset.disabled = true;
     btnReset.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Restableciendo...`;
 
-    const csrfToken = document.cookie.split('; ').find(c => c.startsWith('csrftoken='))?.split('=')[1] || '';
+    const token = localStorage.getItem('token_acceso');
+    if (!token) { alert('Debe iniciar sesión'); return; }
+
     try {
         const response = await fetch('/api/etl/reset/', {
             method: 'DELETE',
-            headers: { 'X-CSRFToken': csrfToken }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
         const resultado = await response.json();
 
         if (response.ok && resultado.status === 'success') {
             alert(resultado.message);
             await cargarHistorialLogs();
-            // Redirigir al dashboard que ahora mostrará pantalla de bienvenida
             window.location.href = '/dashboard/';
         } else {
             throw new Error(resultado.message || "Error al restablecer datos.");

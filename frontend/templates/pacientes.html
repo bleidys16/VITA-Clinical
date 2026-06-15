@@ -3,33 +3,114 @@
 {% block title %}Pacientes | VITA Clinical{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold m-0" style="font-family: 'Epilogue'; color: var(--clia-jacarta);">
-        Gestión y Segmentación de Pacientes
-    </h2>
-    <div class="btn-group shadow-sm" role="group">
-        <button type="button" class="btn btn-outline-primary active" id="btn-filtro-todos">Todos</button>
-        <button type="button" class="btn btn-outline-danger" id="btn-filtro-criticos">
-            <i class="fa-solid fa-triangle-exclamation me-1"></i> Solo Críticos
-        </button>
+<style>
+    .sticky-top {
+        position: sticky;
+        top: 0;
+        z-index: 1020;
+        background-color: #f1f3f5 !important;
+        box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
+    }
+    .badge-riesgo { font-size: 0.72rem; padding: 3px 10px; font-weight: 500; }
+    .badge-riesgo.bajo { background-color: #d4edda; color: #155724; }
+    .badge-riesgo.medio { background-color: #fff3cd; color: #856404; }
+    .badge-riesgo.alto { background-color: #ffe5d0; color: #a84c00; }
+    .badge-riesgo.critico { background-color: #f8d7da; color: #721c24; }
+    .paciente-row { transition: background-color 0.15s ease-in-out; }
+    .table-vitals { font-size: 0.78rem; color: #495057; }
+    .table-vitals i { width: 14px; text-align: center; opacity: 0.6; }
+</style>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
+            <div>
+                <h2 class="fw-bold m-0" style="font-family: 'Epilogue'; color: #fff; font-size: 1.5rem;">
+                    Gestión y Segmentación de Pacientes
+                </h2>
+                <p class="m-0 mt-1" style="opacity: 0.8; font-size: 0.95rem;">
+                    Visualización, filtrado y exportación de registros clínicos
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <button id="btn-nuevo-paciente" class="btn btn-clia-primary shadow-sm" style="display: none;" onclick="abrirModalCrear()">
+                    <i class="fa-solid fa-plus me-1"></i> Nuevo Paciente
+                </button>
+                <div class="btn-group shadow-sm" role="group">
+                    <button class="btn btn-outline-success" id="btn-excel" onclick="descargarReporte('excel')">
+                        <i class="fa-solid fa-file-excel me-1"></i> Excel
+                    </button>
+            <button class="btn btn-outline-secondary" id="btn-csv" onclick="descargarReporte('csv')">
+                <i class="fa-solid fa-file-csv me-1"></i> CSV
+            </button>
+            <button class="btn btn-outline-danger" onclick="descargarReporte('pdf')">
+                <i class="fa-solid fa-file-pdf me-1"></i> PDF
+            </button>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+
+<div class="card border-0 mb-4" style="background: transparent;">
+    <div class="card-body px-0 pt-0 pb-2">
+        <div class="row g-2 align-items-center">
+            <div class="col-lg-4 col-md-5">
+                <label for="search-input" class="visually-hidden">Búsqueda</label>
+                <input type="text" id="search-input" class="form-control form-control-sm"
+                       placeholder="Buscar por ID, nombre o diagnóstico...">
+            </div>
+            <div class="col-lg-3 col-md-3">
+                <label for="filter-riesgo" class="visually-hidden">Riesgo</label>
+                <select id="filter-riesgo" class="form-select form-select-sm">
+                    <option value="todos">Todos los riesgos</option>
+                    <option value="Bajo">Bajo</option>
+                    <option value="Medio">Medio</option>
+                    <option value="Alto">Alto</option>
+                    <option value="Crítico">Crítico</option>
+                </select>
+            </div>
+            <div class="col-lg-3 col-md-3">
+                <label for="filter-imc" class="visually-hidden">IMC</label>
+                <select id="filter-imc" class="form-select form-select-sm">
+                    <option value="todos">Todos los IMC</option>
+                    <option value="Bajo peso">Bajo peso (&lt; 18.5)</option>
+                    <option value="Normal">Normal (18.5 - 24.9)</option>
+                    <option value="Sobrepeso">Sobrepeso (25.0 - 29.9)</option>
+                    <option value="Obesidad">Obesidad (&gt; 30.0)</option>
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-1 text-md-end">
+                <div class="form-check form-switch d-inline-block m-0">
+                    <input class="form-check-input" type="checkbox" role="switch" id="switch-criticos-estricto">
+                    <label class="form-check-label small text-secondary" for="switch-criticos-estricto">
+                        Solo Críticos
+                    </label>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold" style="color: var(--clia-jacarta);">Pacientes</h6>
+        <div id="header-contador"></div>
+    </div>
     <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
+        <table class="table table-hover align-middle mb-0" id="tabla-pacientes" style="font-size: 0.85rem;">
+            <thead class="table-light sticky-top">
                 <tr>
-                    <th>ID Paciente</th>
-                    <th>Edad</th>
-                    <th>Sexo</th>
-                    <th>IMC</th>
-                    <th>Signos Vitales (TA / Glucosa / Sat)</th>
-                    <th>Estado / Riesgo</th>
+                    <th style="width: 24%;">Paciente</th>
+                    <th style="width: 10%;">Edad/Sexo</th>
+                    <th style="width: 10%;">IMC</th>
+                    <th style="width: 30%;">Signos Vitales</th>
+                    <th style="width: 18%;" class="text-center">Riesgo</th>
+                    <th id="th-acciones" style="width: 8%;" class="text-center d-none"></th>
                 </tr>
             </thead>
-            <tbody id="tabla-pacientes">
-                <tr>
+            <tbody id="tabla-pacientes-body">
+                <tr id="loading-row">
                     <td colspan="6" class="text-center py-4 text-muted">
                         <i class="fa-solid fa-circle-notch fa-spin me-2"></i> Cargando registros clínicos...
                     </td>
@@ -37,28 +118,168 @@
             </tbody>
         </table>
     </div>
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap gap-2" id="footer-paginacion">
+        <div id="contador-info" class="text-muted small"></div>
+        <div class="d-flex align-items-center gap-2" id="paginacion-controles"></div>
+    </div>
+</div>
+
+
+<!-- Modal Paciente -->
+<div class="modal fade" id="modalPaciente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+            <div class="modal-header border-0" style="background: var(--clia-indigo-dark); color: #fff; border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-bold" id="modalPacienteLabel"><i class="fa-solid fa-user me-2"></i> Nuevo Paciente</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="form-paciente">
+                    <input type="hidden" id="edit-paciente-id">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Nombres</label>
+                            <input class="form-control" id="p-nombres" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Apellidos</label>
+                            <input class="form-control" id="p-apellidos" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Edad</label>
+                            <input type="number" class="form-control" id="p-edad" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Sexo</label>
+                            <select class="form-select" id="p-sexo">
+                                <option value="">Seleccionar</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Peso (kg)</label>
+                            <input type="number" step="0.1" class="form-control" id="p-peso">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Altura (m)</label>
+                            <input type="number" step="0.01" class="form-control" id="p-altura">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Presión Sistólica</label>
+                            <input type="number" class="form-control" id="p-sistolica">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Presión Diastólica</label>
+                            <input type="number" class="form-control" id="p-diastolica">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Frec. Cardíaca</label>
+                            <input type="number" class="form-control" id="p-fc">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Glucosa (mg/dL)</label>
+                            <input type="number" step="0.1" class="form-control" id="p-glucosa">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Colesterol (mg/dL)</label>
+                            <input type="number" step="0.1" class="form-control" id="p-colesterol">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Sat. Oxígeno (%)</label>
+                            <input type="number" step="0.1" class="form-control" id="p-saturacion">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Temperatura (°C)</label>
+                            <input type="number" step="0.1" class="form-control" id="p-temperatura">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Diagnóstico Preliminar</label>
+                            <input class="form-control" id="p-diagnostico">
+                        </div>
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="p-fumador">
+                                        <label class="form-check-label small">Fumador</label>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="p-alcohol">
+                                        <label class="form-check-label small">Consumo Alcohol</label>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="p-antecedentes">
+                                        <label class="form-check-label small">Antec. Familiares</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-clia-primary" id="btn-guardar-paciente" onclick="guardarPaciente()">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
     document.getElementById('nav-pacientes').classList.add('active');
 
     let todosLosPacientes = [];
+    let pageActual = 1;
+    const PAGE_SIZE = 15;
+    let esAdmin = false;
+    let esMedico = false;
 
+    // ── Utilidades ──────────────────────────────────────────
+    function imcClass(clasif) {
+        return { 'Bajo peso': 'bajo-peso', 'Normal': 'normal', 'Sobrepeso': 'sobrepeso', 'Obesidad': 'obesidad' }[clasif] || 'normal';
+    }
+    function riesgoClass(riesgo) {
+        return { 'Bajo': 'bajo', 'Medio': 'medio', 'Alto': 'alto', 'Crítico': 'critico' }[riesgo] || 'bajo';
+    }
+
+    // ── Inicialización ──────────────────────────────────────
     document.addEventListener("DOMContentLoaded", async function() {
         const token = localStorage.getItem('token_acceso');
         if (!token) return;
 
+        const rol = localStorage.getItem('usuario_rol');
+        esAdmin = rol === 'ADMIN';
+        esMedico = rol === 'MEDICO';
+
+        if (esAdmin) {
+            document.getElementById('btn-nuevo-paciente').style.display = 'inline-block';
+            document.getElementById('th-acciones').classList.remove('d-none');
+        }
+        if (esMedico) {
+            document.getElementById('btn-excel').style.display = 'none';
+            document.getElementById('btn-csv').style.display = 'none';
+        }
+
         try {
-            const response = await fetch('/api/etl/pacientes/', {
+            const response = await fetch('/api/etl/pacientes/?page_size=5000', {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (response.ok) {
-                todosLosPacientes = await response.json();
-                renderizarTabla(todosLosPacientes);
+                const json = await response.json();
+                todosLosPacientes = json.results || [];
+                pageActual = 1;
+                renderizarPagina();
             } else {
-                document.getElementById('tabla-pacientes').innerHTML = `
+                document.getElementById('tabla-pacientes-body').innerHTML = `
                     <tr><td colspan="6" class="text-center text-danger py-4">Error al cargar los datos.</td></tr>
                 `;
             }
@@ -66,55 +287,277 @@
             console.error("Error cargando pacientes:", error);
         }
 
-        document.getElementById('btn-filtro-todos').addEventListener('click', function() {
-            cambiarFiltroActivo('btn-filtro-todos', 'btn-filtro-criticos');
-            renderizarTabla(todosLosPacientes);
-        });
-
-        document.getElementById('btn-filtro-criticos').addEventListener('click', function() {
-            cambiarFiltroActivo('btn-filtro-criticos', 'btn-filtro-todos');
-            const criticos = todosLosPacientes.filter(p => p.presion_sistolica > 180 || p.glucosa > 300 || p.saturacion_oxigeno < 85);
-            renderizarTabla(criticos);
-        });
+        document.getElementById('search-input').addEventListener('input', aplicarFiltros);
+        document.getElementById('filter-riesgo').addEventListener('change', aplicarFiltros);
+        document.getElementById('filter-imc').addEventListener('change', aplicarFiltros);
+        document.getElementById('switch-criticos-estricto').addEventListener('change', aplicarFiltros);
     });
 
-    function cambiarFiltroActivo(activoId, inactivoId) {
-        document.getElementById(activoId).classList.add('active');
-        document.getElementById(inactivoId).classList.remove('active');
+    function normalizar(texto) {
+        return texto.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
-    function renderizarTabla(pacientes) {
-        const tbody = document.getElementById('tabla-pacientes');
+    function obtenerPacientesFiltrados() {
+        const queryText = normalizar(document.getElementById('search-input').value);
+        const riesgoSelected = document.getElementById('filter-riesgo').value;
+        const imcSelected = document.getElementById('filter-imc').value;
+        const soloCriticosActivo = document.getElementById('switch-criticos-estricto').checked;
+
+        return todosLosPacientes.filter(p => {
+            const textoCompleto = normalizar(`${p.id_paciente} ${p.nombres} ${p.apellidos} ${p.diagnostico_preliminar || ''}`);
+            const cumpleTexto = textoCompleto.includes(queryText);
+            const cumpleRiesgo = riesgoSelected === 'todos' || p.riesgo_enfermedad === riesgoSelected;
+            const cumpleImc = imcSelected === 'todos' || p.clasificacion_imc === imcSelected;
+            const cumpleCritico = !soloCriticosActivo || p.riesgo_enfermedad === 'Crítico';
+            return cumpleTexto && cumpleRiesgo && cumpleImc && cumpleCritico;
+        });
+    }
+
+    function aplicarFiltros() { pageActual = 1; renderizarPagina(); }
+
+    function renderizarPagina() {
+        const filtrados = obtenerPacientesFiltrados();
+        const totalPaginas = Math.max(1, Math.ceil(filtrados.length / PAGE_SIZE));
+        if (pageActual > totalPaginas) pageActual = totalPaginas;
+        const inicio = (pageActual - 1) * PAGE_SIZE;
+        const fin = Math.min(inicio + PAGE_SIZE, filtrados.length);
+        renderizarTabla(filtrados.slice(inicio, fin), filtrados.length);
+        renderizarPaginacion(totalPaginas, filtrados.length);
+    }
+
+    function renderizarPaginacion(totalPaginas, totalFiltrados) {
+        const info = document.getElementById('contador-info');
+        const inicio = (pageActual - 1) * PAGE_SIZE + 1;
+        const fin = Math.min(pageActual * PAGE_SIZE, totalFiltrados);
+        info.innerHTML = `<i class="fa-solid fa-users me-1"></i> Mostrando ${inicio}&ndash;${fin} de ${totalFiltrados} pacientes` +
+            (totalFiltrados < todosLosPacientes.length ? ` <span class="text-muted">(filtrados de ${todosLosPacientes.length})</span>` : '');
+
+        const header = document.getElementById('header-contador');
+        header.innerHTML = `<span class="badge rounded-pill bg-secondary"><i class="fa-solid fa-users me-1"></i> ${totalFiltrados} de ${todosLosPacientes.length}</span>`;
+
+        const controles = document.getElementById('paginacion-controles');
+        controles.innerHTML = `
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary" onclick="irPagina(1)" ${pageActual <= 1 ? 'disabled' : ''}><i class="fa-solid fa-angles-left"></i></button>
+                <button class="btn btn-outline-secondary" onclick="irPagina(${pageActual - 1})" ${pageActual <= 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>
+                <span class="btn btn-outline-primary active">${pageActual}</span>
+                <button class="btn btn-outline-secondary" onclick="irPagina(${pageActual + 1})" ${pageActual >= totalPaginas ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>
+                <button class="btn btn-outline-secondary" onclick="irPagina(${totalPaginas})" ${pageActual >= totalPaginas ? 'disabled' : ''}><i class="fa-solid fa-angles-right"></i></button>
+            </div>
+            <div class="input-group input-group-sm" style="max-width: 130px;">
+                <input type="number" id="input-ir-pagina" class="form-control" min="1" max="${totalPaginas}" placeholder="Ir a..." style="font-size: 0.8rem;">
+                <button class="btn btn-outline-primary" onclick="irAPaginaInput()">Ir</button>
+            </div>
+        `;
+        document.getElementById('input-ir-pagina')?.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') irAPaginaInput();
+        });
+    }
+
+    function irAPaginaInput() {
+        const input = document.getElementById('input-ir-pagina');
+        if (!input) return;
+        const p = parseInt(input.value);
+        const filtrados = obtenerPacientesFiltrados();
+        const total = Math.max(1, Math.ceil(filtrados.length / PAGE_SIZE));
+        if (p >= 1 && p <= total) { pageActual = p; renderizarPagina(); }
+    }
+
+    function irPagina(pagina) { pageActual = pagina; renderizarPagina(); }
+
+    function renderizarTabla(pacientes, total) {
+        const tbody = document.getElementById('tabla-pacientes-body');
         if (pacientes.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No se encontraron registros.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">
+                <i class="fas fa-folder-open fa-3x mb-3 d-block text-secondary"></i>
+                No se encontraron registros.
+            </td></tr>`;
             return;
         }
-
         tbody.innerHTML = '';
         pacientes.forEach(p => {
-            const esCritico = p.presion_sistolica > 180 || p.glucosa > 300 || p.saturacion_oxigeno < 85;
+            const imcVal = p.imc ? p.imc.toFixed(1) : '—';
+            const imcClase = imcClass(p.clasificacion_imc);
+            const riesgoClase = riesgoClass(p.riesgo_enfermedad);
+            const riesgoLabel = p.riesgo_enfermedad || '—';
+            const diag = p.diagnostico_preliminar || '';
 
-            const badgeEstado = esCritico
-                ? `<span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill"><i class="fa-solid fa-circle-exclamation me-1"></i> Crítico</span>`
-                : `<span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Estable</span>`;
-
-            const filaClase = esCritico ? 'table-danger bg-opacity-10' : '';
-
-            tbody.innerHTML += `
-                <tr class="${filaClase}">
-                    <td class="fw-semibold">#VITA-${p.id_paciente}</td>
-                    <td>${p.edad} años</td>
-                    <td><span class="text-capitalize">${p.sexo}</span></td>
-                    <td>${p.imc}</td>
-                    <td>
-                        <small class="d-block">PA: <strong>${p.presion_sistolica} mmHg</strong></small>
-                        <small class="d-block">Glucosa: <strong>${p.glucosa} mg/dL</strong></small>
-                        <small class="d-block">SatO₂: <strong>${p.saturacion_oxigeno}%</strong></small>
-                    </td>
-                    <td>${badgeEstado}</td>
-                </tr>
+            const tr = document.createElement('tr');
+            tr.className = 'paciente-row';
+            tr.innerHTML = `
+                <td>
+                    <div class="fw-semibold text-dark">${p.nombres} ${p.apellidos}</div>
+                    ${diag ? `<small class="text-muted" style="font-size: 0.75rem;">${diag}</small>` : ''}
+                </td>
+                <td class="text-muted" style="font-size: 0.83rem;">${p.edad} · ${p.sexo ? p.sexo[0] : '—'}</td>
+                <td>
+                    <span class="fw-semibold" style="font-size: 0.85rem;">${imcVal}</span>
+                </td>
+                <td>
+                    <div class="table-vitals d-flex flex-wrap gap-2">
+                        <span><i class="fa-solid fa-heart-pulse text-danger"></i> ${p.presion_sistolica || '—'}/${p.presion_diastolica || '—'}</span>
+                        <span><i class="fa-solid fa-droplet text-danger"></i> ${p.glucosa || '—'}</span>
+                        <span><i class="fa-solid fa-lungs text-info"></i> ${p.saturacion_oxigeno || '—'}%</span>
+                        <span><i class="fa-solid fa-temperature-high text-warning"></i> ${p.temperatura || '—'}°C</span>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <span class="badge badge-riesgo ${riesgoClase}">${riesgoLabel}</span>
+                </td>
+                ${esAdmin ? `
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-secondary border-0 me-1" onclick="abrirModalEditar(${p.id_paciente})" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary border-0" onclick="eliminarPaciente(${p.id_paciente})" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
+                </td>` : ''}
             `;
+            tbody.appendChild(tr);
         });
+    }
+
+    // ── Reportes ────────────────────────────────────────────
+    async function descargarReporte(formato) {
+        const token = localStorage.getItem('token_acceso');
+        if (!token) return;
+        try {
+            const response = await fetch(`/api/etl/reportes/?formato=${formato}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                alert(err.error || 'Error al descargar el reporte');
+                return;
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const extensiones = { excel: 'xlsx', csv: 'xlsx', pdf: 'pdf' };
+            a.download = `reporte_vita_${new Date().toISOString().slice(0,10)}.${extensiones[formato] || formato}`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error descargando reporte:", error);
+            alert("Error al descargar el reporte");
+        }
+    }
+
+    // ── CRUD Pacientes ──────────────────────────────────────
+    function abrirModalCrear() {
+        document.getElementById('modalPacienteLabel').innerHTML = '<i class="fa-solid fa-user-plus me-2"></i> Nuevo Paciente';
+        document.getElementById('form-paciente').reset();
+        document.getElementById('edit-paciente-id').value = '';
+        new bootstrap.Modal('#modalPaciente').show();
+    }
+
+    function abrirModalEditar(id) {
+        const p = todosLosPacientes.find(x => x.id_paciente === id);
+        if (!p) return;
+        document.getElementById('modalPacienteLabel').innerHTML = '<i class="fa-solid fa-user-pen me-2"></i> Editar Paciente';
+        document.getElementById('edit-paciente-id').value = p.id_paciente;
+        document.getElementById('p-nombres').value = p.nombres || '';
+        document.getElementById('p-apellidos').value = p.apellidos || '';
+        document.getElementById('p-edad').value = p.edad || '';
+        document.getElementById('p-sexo').value = p.sexo || '';
+        document.getElementById('p-peso').value = p.peso || '';
+        document.getElementById('p-altura').value = p.altura || '';
+        document.getElementById('p-sistolica').value = p.presion_sistolica || '';
+        document.getElementById('p-diastolica').value = p.presion_diastolica || '';
+        document.getElementById('p-fc').value = p.frecuencia_cardiaca || '';
+        document.getElementById('p-glucosa').value = p.glucosa || '';
+        document.getElementById('p-colesterol').value = p.colesterol || '';
+        document.getElementById('p-saturacion').value = p.saturacion_oxigeno || '';
+        document.getElementById('p-temperatura').value = p.temperatura || '';
+        document.getElementById('p-diagnostico').value = p.diagnostico_preliminar || '';
+        document.getElementById('p-fumador').checked = !!p.fumador;
+        document.getElementById('p-alcohol').checked = !!p.consumo_alcohol;
+        document.getElementById('p-antecedentes').checked = !!p.antecedentes_familiares;
+        new bootstrap.Modal('#modalPaciente').show();
+    }
+
+    async function guardarPaciente() {
+        const token = localStorage.getItem('token_acceso');
+        if (!token) return;
+
+        const editId = document.getElementById('edit-paciente-id').value;
+        const payload = {
+            nombres: document.getElementById('p-nombres').value,
+            apellidos: document.getElementById('p-apellidos').value,
+            edad: document.getElementById('p-edad').value,
+            sexo: document.getElementById('p-sexo').value,
+            peso: document.getElementById('p-peso').value || null,
+            altura: document.getElementById('p-altura').value || null,
+            presion_sistolica: document.getElementById('p-sistolica').value || null,
+            presion_diastolica: document.getElementById('p-diastolica').value || null,
+            frecuencia_cardiaca: document.getElementById('p-fc').value || null,
+            glucosa: document.getElementById('p-glucosa').value || null,
+            colesterol: document.getElementById('p-colesterol').value || null,
+            saturacion_oxigeno: document.getElementById('p-saturacion').value || null,
+            temperatura: document.getElementById('p-temperatura').value || null,
+            diagnostico_preliminar: document.getElementById('p-diagnostico').value || '',
+            fumador: document.getElementById('p-fumador').checked,
+            consumo_alcohol: document.getElementById('p-alcohol').checked,
+            antecedentes_familiares: document.getElementById('p-antecedentes').checked,
+        };
+
+        const btn = document.getElementById('btn-guardar-paciente');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-1"></i> Guardando...';
+
+        try {
+            let url, method;
+            if (editId) {
+                url = `/api/etl/pacientes/${editId}/update/`;
+                method = 'PUT';
+            } else {
+                url = '/api/etl/pacientes/create/';
+                method = 'POST';
+            }
+            const response = await fetch(url, {
+                method,
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                bootstrap.Modal.getInstance('#modalPaciente').hide();
+                // Recargar
+                const res = await fetch('/api/etl/pacientes/?page_size=5000', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const json = await res.json();
+                todosLosPacientes = json.results || [];
+                renderizarPagina();
+            } else {
+                alert(data.error || 'Error al guardar');
+            }
+        } catch (error) {
+            alert('Error de conexión');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar';
+        }
+    }
+
+    async function eliminarPaciente(id) {
+        if (!confirm('¿Eliminar este paciente definitivamente?')) return;
+        const token = localStorage.getItem('token_acceso');
+        try {
+            const response = await fetch(`/api/etl/pacientes/${id}/delete/`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                todosLosPacientes = todosLosPacientes.filter(p => p.id_paciente !== id);
+                renderizarPagina();
+            } else {
+                const data = await response.json();
+                alert(data.error || 'Error al eliminar');
+            }
+        } catch (error) {
+            alert('Error de conexión');
+        }
     }
 </script>
 {% endblock %}

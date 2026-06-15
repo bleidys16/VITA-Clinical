@@ -96,7 +96,7 @@ class MotorPredictivoVITA:
         X_train_scaled = scaler.fit_transform(X_train)
         X_test_scaled = scaler.transform(X_test)
 
-        modelo = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=10)
+        modelo = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=10, class_weight='balanced')
         modelo.fit(X_train_scaled, y_train)
 
         y_pred = modelo.predict(X_test_scaled)

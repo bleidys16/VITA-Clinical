@@ -5,10 +5,15 @@
 {% block content %}
 <div class="row mb-4">
     <div class="col-12">
-        <div class="p-4 rounded shadow-sm" style="background-color: var(--clia-jacarta); color: #FFFFFF;">
-            <p class="m-0" style="font-family: 'Epilogue', sans-serif; font-weight: 400; font-size: 1.3rem;">
-                Extracción, Transformación, Limpieza y Carga de registros médicos IPS
-            </p>
+        <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
+            <div>
+                <h2 class="fw-bold m-0" style="font-family: 'Epilogue'; color: #fff; font-size: 1.5rem;">
+                    <i class="fa-solid fa-database me-2"></i> Control ETL
+                </h2>
+                <p class="m-0 mt-1" style="opacity: 0.8; font-size: 0.95rem;">
+                    Extracción, Transformación, Limpieza y Carga de registros médicos IPS
+                </p>
+            </div>
         </div>
     </div>
 </div>
@@ -51,24 +56,21 @@
                         <i class="fa-solid fa-play me-2"></i> Iniciar Pipeline ETL
                     </button>
                 </div>
+
+                <div id="etl-loading" class="p-3 rounded mb-3 d-none text-center"
+                    style="background-color: var(--clia-bright-gray);">
+                    <i class="fa-solid fa-gear fa-spin fs-3 mb-2" style="color: var(--clia-jacarta);"></i>
+                    <strong class="d-block" style="color: var(--clia-jacarta);">Procesando...</strong>
+                    <small class="text-muted">El pipeline ETL+ML está en ejecución.</small>
+                </div>
+
                 <div class="mb-3">
                     <button id="btn-reset-data" class="btn btn-outline-danger w-100 py-2 shadow-sm" style="font-weight: 500;">
                         <i class="fa-solid fa-rotate-left me-2"></i> Restablecer Dataset
                     </button>
                 </div>
 
-                <div id="etl-status-container" class="p-3 rounded d-none"
-                    style="background-color: var(--clia-bright-gray); border: 1px dashed var(--clia-blue-gray);">
-                    <div class="d-flex align-items-center gap-3">
-                        <div id="etl-spinner-container" class="d-flex align-items-center justify-content-center">
-                            <i id="etl-spinner" class="fa-solid fa-gears fa-spin fs-2" style="color: var(--clia-jacarta); min-width: 40px;"></i>
-                        </div>
-                        <div>
-                            <strong id="etl-status-title" class="d-block" style="color: var(--clia-jacarta);">Procesando datos...</strong>
-                            <small id="etl-status-desc" class="text-muted">Pandas está transformando los archivos clínicos.</small>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -84,7 +86,7 @@
                 </span>
             </div>
 
-            <div class="table-responsive" style="max-height: 380px;">
+            <div class="table-responsive" style="max-height: 260px;">
                 <table class="table table-hover align-middle" style="font-family: 'Urbanist', sans-serif;">
                     <thead style="background-color: var(--clia-bright-gray); position: sticky; top: 0; z-index: 1;">
                         <tr style="color: var(--clia-jacarta);">
@@ -103,6 +105,15 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <hr class="my-3">
+            <h6 class="fw-bold" style="color: var(--clia-jacarta);">
+                <i class="fa-solid fa-terminal me-2"></i> Consola de Procesamiento
+            </h6>
+            <div id="etl-console"
+                 style="background: #1e1e2e; color: #cdd6f4; font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.8rem; border-radius: 8px; padding: 12px; max-height: 150px; overflow-y: auto; min-height: 60px;">
+                <div class="text-muted">— Esperando ejecución del pipeline —</div>
             </div>
         </div>
     </div>
@@ -163,5 +174,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="/static/js/etl_worker.js"></script>
+<script src="/static/js/etl_worker.js?v=4"></script>
 {% endblock %}

@@ -23,60 +23,137 @@ async function cargarDatosDashboard(token) {
         if (response.ok && !data.sistema_vacio) {
             document.getElementById('kpi-total').innerText = data.kpis.total_registros;
             document.getElementById('kpi-criticos').innerText = data.kpis.pacientes_criticos;
-            document.getElementById('kpi-cronicos').innerText = `${data.kpis.pacientes_hipertensos} / ${data.kpis.pacientes_diabeticos}`;
+            document.getElementById('kpi-edad-promedio').innerText = data.kpis.edad_promedio;
             document.getElementById('kpi-riesgo').innerText = `${data.kpis.riesgo_promedio}%`;
 
-            inicializarGraficaBarras(data.kpis);
-            inicializarGraficaTorta(data.kpis);
-            inicializarGraficaLineas(data.estadistica_descriptiva);
+            const ic = data.indicadores_clinicos || {};
+            document.getElementById('ind-glucosa').innerText = ic.glucosa_promedio ? `${ic.glucosa_promedio} mg/dL` : '—';
+            document.getElementById('ind-imc').innerText = ic.imc_promedio ? `${ic.imc_promedio}` : '—';
+            document.getElementById('ind-criticos').innerText = ic.porcentaje_criticos ? `${ic.porcentaje_criticos}%` : '—';
+            document.getElementById('ind-alto').innerText = ic.porcentaje_riesgo_alto ? `${ic.porcentaje_riesgo_alto}%` : '—';
+
+            inicializarGraficaBarras(data.graficas);
+            inicializarGraficaTorta(data.graficas);
+            inicializarGraficaLineas(data.graficas);
         }
     } catch (error) {
         console.error("Error al renderizar las analíticas de ApexCharts:", error);
     }
 }
 
-function inicializarGraficaBarras(kpis) {
+function inicializarGraficaBarras(graficas) {
+    const segmentos = graficas.barras_segmentacion || [];
+    const patologiasFijas = ['Hipertensión', 'Diabetes Tipo 2', 'Obesidad'];
+
+    const series = patologiasFijas.map(nombre => ({
+        name: nombre,
+        data: segmentos.map(seg => {
+            const encontrado = (seg.diagnosticos || []).find(d => d.nombre === nombre);
+            return encontrado ? encontrado.cantidad : 0;
+        })
+    }));
+
+    const otrasData = segmentos.map(seg => {
+        const fijas = patologiasFijas.map(n => {
+            const encontrado = (seg.diagnosticos || []).find(d => d.nombre === n);
+            return encontrado ? encontrado.cantidad : 0;
+        });
+        const sumaFijas = fijas.reduce((a, b) => a + b, 0);
+        const totalSeg = seg.total || 0;
+        return Math.max(0, totalSeg - sumaFijas);
+    });
+    series.push({ name: 'Otras condiciones', data: otrasData });
+
     const options = {
-        chart: { type: 'bar', height: 320, toolbar: { show: true } },
-        plotOptions: { bar: { borderRadius: 6, distributed: true } },
-        colors: ['#4267B2', '#FF4560', '#00E396', '#FEB019'],
-        series: [{
-            name: 'Pacientes',
-            data: [kpis.total_registros, kpis.pacientes_criticos, kpis.pacientes_hipertensos, kpis.pacientes_diabeticos]
-        }],
+        chart: { type: 'bar', height: 320, stacked: true, toolbar: { show: false } },
+        plotOptions: { bar: { borderRadius: 4, horizontal: false } },
+        colors: ['#000229', '#6A4DD4', '#A4A7E3', '#CEB5D4'],
+        series: series,
         xaxis: {
-            categories: ['Base Total', 'Estado Crítico', 'Hipertensión', 'Diabetes']
-        }
+            categories: graficas.labels_barras || ['<30', '30-49', '50-69', '70+'],
+            title: { text: 'Rangos de Edad' }
+        },
+        yaxis: { title: { text: 'Número de Pacientes' } },
+        grid: { show: false },
+        legend: { position: 'right', fontSize: '12px', offsetY: 40 },
+        dataLabels: { enabled: false }
     };
-    const chart = new ApexCharts(document.querySelector("#chart-barras"), options);
-    chart.render();
+    if (document.querySelector("#chart-barras")) {
+        const chart = new ApexCharts(document.querySelector("#chart-barras"), options);
+        chart.render();
+    }
 }
 
-function inicializarGraficaTorta(kpis) {
+function inicializarGraficaTorta(graficas) {
+    const torta = graficas.riesgo_torta || { labels: [], series: [] };
     const options = {
-        chart: { type: 'donut', height: 320 },
-        labels: ['Críticos', 'Estables (Resto)'],
-        series: [kpis.pacientes_criticos, kpis.total_registros - kpis.pacientes_criticos],
-        colors: ['#FF4560', '#00E396'],
-        legend: { position: 'bottom' }
+        chart: { type: 'donut', height: 300, toolbar: { show: false } },
+        labels: torta.labels.length ? torta.labels : ['Sin datos'],
+        series: torta.series.length ? torta.series : [1],
+        colors: ['#48BB78', '#ECC94B', '#CEB5D4', '#E53E3E'],
+        legend: { position: 'bottom', fontSize: '12px', horizontalAlign: 'center' },
+        dataLabels: { enabled: true, style: { fontSize: '14px', fontWeight: 'bold' } },
+        plotOptions: { pie: { donut: { size: '60%' }, expandOnClick: true } },
+        tooltip: { y: { formatter: (val) => `${val} pacientes` } },
+        responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }]
     };
-    const chart = new ApexCharts(document.querySelector("#chart-torta"), options);
-    chart.render();
+    if (document.querySelector("#chart-radar")) {
+        const chart = new ApexCharts(document.querySelector("#chart-radar"), options);
+        chart.render();
+    }
 }
 
-function inicializarGraficaLineas(descriptiva) {
+function inicializarGraficaLineas(graficas) {
+    const tendencias = graficas.tendencias || [];
+
+    const bloques = [
+        { label: '15-25', min: 15, max: 25 },
+        { label: '26-35', min: 26, max: 35 },
+        { label: '36-45', min: 36, max: 45 },
+        { label: '46-55', min: 46, max: 55 },
+        { label: '56-65', min: 56, max: 65 },
+        { label: '66+', min: 66, max: 200 },
+    ];
+
+    const promediosPorBloque = bloques.map(bloque => {
+        const filtradas = tendencias.filter(t => t.edad >= bloque.min && t.edad <= bloque.max);
+        const sistolicas = filtradas.filter(t => t.presion_sistolica).map(t => t.presion_sistolica);
+        const glucosas = filtradas.filter(t => t.glucosa).map(t => t.glucosa);
+        return {
+            label: bloque.label,
+            sistolica: sistolicas.length ? Math.round(sistolicas.reduce((a, b) => a + b, 0) / sistolicas.length) : 0,
+            glucosa: glucosas.length ? Math.round((glucosas.reduce((a, b) => a + b, 0) / glucosas.length) * 10) / 10 : 0,
+        };
+    });
+
+    const labels = promediosPorBloque.map(b => b.label);
+    const dataSistolica = promediosPorBloque.map(b => b.sistolica);
+    const dataGlucosa = promediosPorBloque.map(b => b.glucosa);
+
     const options = {
-        chart: { type: 'line', height: 320, zoom: { enabled: true } },
+        chart: { type: 'line', height: 320, zoom: { enabled: false }, toolbar: { show: false } },
         stroke: { curve: 'smooth', width: 3 },
+        markers: { size: 0 },
         series: [
-            { name: 'Media Edad', data: [descriptiva.edad.media, descriptiva.edad.mediana, descriptiva.edad.moda] },
-            { name: 'Media Glucosa', data: [descriptiva.glucosa.media, descriptiva.glucosa.media + 10, descriptiva.glucosa.media - 10] }
+            { name: 'TA Sistólica Promedio (mmHg)', data: dataSistolica },
+            { name: 'Glucosa Promedio (mg/dL)', data: dataGlucosa }
         ],
-        xaxis: { categories: ['Medición Central', 'Mediana Tendencia', 'Zona Moda'] },
-        colors: ['#4b306b', '#00d1b2']
+        xaxis: {
+            categories: labels,
+            title: { text: 'Grupo Etario' }
+        },
+        yaxis: [
+            { title: { text: 'TA Sistólica (mmHg)' }, min: 80, max: 200 },
+            { opposite: true, title: { text: 'Glucosa (mg/dL)' }, min: 50, max: 300 }
+        ],
+        colors: ['#E53E3E', '#000229'],
+        grid: { show: false },
+        legend: { position: 'top', fontSize: '12px' }
     };
-    const chart = new ApexCharts(document.querySelector("#chart-lineas"), options);
-    chart.render();
+    if (document.querySelector("#chart-lineas")) {
+        const chart = new ApexCharts(document.querySelector("#chart-lineas"), options);
+        chart.render();
+    }
 }
 
 async function cargarMetricasMachineLearning(token) {
@@ -94,6 +171,15 @@ async function cargarMetricasMachineLearning(token) {
             document.getElementById('ml-f1').innerText = `${data.f1_score}%`;
 
             inicializarHeatmap(data.heatmap);
+        } else {
+            document.querySelectorAll('#ml-accuracy, #ml-precision, #ml-recall, #ml-f1').forEach(el => el.innerText = '—');
+            const hm = document.getElementById('chart-heatmap');
+            if (hm) hm.innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <i class="fa-solid fa-chart-simple fa-2x mb-2" style="color: var(--clia-wisteria);"></i>
+                    <p class="mb-0 small">Sin modelo entrenado</p>
+                </div>
+            `;
         }
     } catch (error) {
         console.error("Error al cargar métricas de ML:", error);
@@ -104,7 +190,7 @@ function inicializarHeatmap(heatmapData) {
     const options = {
         chart: { type: 'heatmap', height: 280, toolbar: { show: false } },
         dataLabels: { enabled: true, style: { colors: ['#fff'] } },
-        colors: ['#4b306b'],
+        colors: ['#000229'],
         series: heatmapData,
         xaxis: { type: 'category' }
     };

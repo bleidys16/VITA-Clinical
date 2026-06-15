@@ -3,45 +3,197 @@
 {% block title %}Iniciar Sesión | VITA Clinical{% endblock %}
 
 {% block login_content %}
-<div class="d-flex align-items-center justify-content-center" style="min-height: 100vh; background-color: var(--clia-bright-gray);">
-    <div class="card p-4 shadow-lg border-0" style="width: 100%; max-width: 420px; border-radius: 16px; background-color: #ffffff;">
-        <div class="text-center mb-4">
-            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" 
-                 style="width: 65px; height: 65px; background-color: var(--clia-jacarta);">
-                <i class="fa-solid fa-heart-pulse fs-2" style="color: var(--clia-wisteria);"></i>
+<style>
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        background-color: #E2ECF5;
+        padding: 0;
+    }
+    .login-card {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+        overflow: hidden;
+        box-shadow: none;
+        background: #fff;
+    }
+    .login-card > .col-md-6 {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .login-gradient {
+        background: linear-gradient(135deg,
+            #000229 0%, #000229 15%,
+            #1a0a33 22%, #6E3377 35%,
+            #6A4DD4 50%, #8a6ddd 62%,
+            #CEB5D4 78%, #E2ECF5 100%
+        );
+        background-size: 150% 150%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 3rem 2rem;
+        color: #fff;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .login-gradient::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(ellipse at 25% 50%, rgba(0, 2, 41, 0.3) 0%, transparent 50%),
+            radial-gradient(ellipse at 60% 30%, rgba(206, 181, 212, 0.15) 0%, transparent 45%),
+            radial-gradient(ellipse at 45% 75%, rgba(106, 77, 212, 0.12) 0%, transparent 40%);
+    }
+    .login-gradient > * {
+        position: relative;
+        z-index: 1;
+    }
+    .login-gradient .brand-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    .login-credentials {
+        margin-top: 2rem;
+        width: 100%;
+    }
+    .login-credentials .credential-item {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(4px);
+        border-radius: 10px;
+        padding: 0.6rem 1rem;
+        margin-bottom: 0.5rem;
+        text-align: left;
+        font-size: 0.8rem;
+    }
+    .login-credentials .credential-item strong {
+        color: #CEB5D4;
+    }
+    .login-form {
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .login-form .form-control {
+        border-radius: 10px;
+        border: 1.5px solid #e2e8f0;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .login-form .form-control:focus {
+        border-color: #6A4DD4;
+        box-shadow: 0 0 0 3px rgba(106, 77, 212, 0.15);
+    }
+    .login-form .btn-login {
+        background-color: #CEB5D4;
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem;
+        font-weight: 700;
+        color: #000229;
+        box-shadow: 0 4px 14px rgba(206, 181, 212, 0.4);
+        transition: all 0.2s;
+    }
+    .login-form .btn-login:hover {
+        background-color: #bca0c7;
+        box-shadow: 0 6px 20px rgba(206, 181, 212, 0.5);
+        transform: translateY(-1px);
+    }
+    @media (max-width: 767px) {
+        .login-card { flex-direction: column; max-width: 100%; }
+        .login-card > .col-md-6 { min-height: auto; }
+        .login-gradient { padding: 2rem; }
+        .login-form { padding: 2rem; }
+    }
+</style>
+
+<div class="login-container">
+    <div class="login-card">
+        <!-- Panel izquierdo: gradiente -->
+        <div class="col-md-6 login-gradient">
+            <div class="brand-icon">
+                <i class="fa-solid fa-heart-pulse"></i>
             </div>
-            <h2 class="fw-bold" style="font-family: 'Epilogue', sans-serif; color: var(--clia-jacarta); margin: 0;">VITA Clinical</h2>
-            <p class="text-muted small mt-1">Plataforma de Analítica Clínica Inteligente</p>
-        </div>
+            <h2 class="fw-bold mb-1" style="font-family: 'Epilogue'; color: #fff;">VITA Clinical</h2>
+            <p style="opacity: 0.85; font-size: 0.9rem; color: #fff;">Plataforma de Analítica Clínica Inteligente</p>
 
-        <div id="login-alert" class="alert alert-danger d-none py-2 text-center" style="font-size: 0.9rem;">
-            <i class="fa-solid fa-circle-xmark me-2"></i> Credenciales inválidas.
-        </div>
+            <div class="login-credentials">
+                <p style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; color: #fff;">Credenciales de prueba</p>
 
-        <form id="form-login">
-            <div class="mb-3">
-                <label for="username" class="form-label small fw-semibold" style="color: var(--clia-jacarta);">Correo Electrónico / Usuario</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-envelope text-muted"></i></span>
-                    <input type="text" class="form-control bg-light border-start-0 ps-0" id="username" required placeholder="ejemplo@vita.com">
+                <div class="credential-item">
+                    <strong>Administrador</strong><br>
+                    <span style="opacity:0.8;">admin@vita.com / Admin123</span>
+                </div>
+
+                <div class="credential-item">
+                    <strong>Analista de Datos</strong><br>
+                    <span style="opacity:0.8;">analista@vita.com / Analista123</span>
+                </div>
+
+                <div class="credential-item">
+                    <strong>Médico</strong><br>
+                    <span style="opacity:0.8;">medico@vita.com / Medico123</span>
                 </div>
             </div>
+        </div>
 
-            <div class="mb-4">
-                <label for="password" class="form-label small fw-semibold" style="color: var(--clia-jacarta);">Contraseña</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
-                    <input type="password" class="form-control bg-light border-start-0 ps-0" id="password" required placeholder="••••••••">
-                    <button class="input-group-text bg-light border-start-0" type="button" id="toggle-password" style="cursor: pointer;">
-                        <i class="fa-solid fa-eye text-muted" id="password-icon"></i>
-                    </button>
-                </div>
+        <!-- Panel derecho: formulario -->
+        <div class="col-md-6 login-form">
+            <h3 class="fw-bold mb-1" style="color: #000229; font-family: 'Epilogue';">Bienvenido</h3>
+            <p class="text-muted small mb-4">Iniciá sesión para acceder al panel clínico.</p>
+
+            <div id="login-alert" class="alert alert-danger d-none py-2" style="font-size: 0.85rem;">
+                <i class="fa-solid fa-circle-xmark me-2"></i> Credenciales inválidas.
             </div>
 
-            <button type="submit" class="btn btn-clia-primary w-100 py-3 shadow-sm" id="btn-login-submit" style="font-weight: 600;">
-                <i class="fa-solid fa-right-to-bracket me-2"></i> Iniciar Sesión
-            </button>
-        </form>
+            <form id="form-login">
+                <div class="mb-3">
+                    <label for="username" class="form-label small fw-semibold" style="color: #000229;">Correo Electrónico</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0" style="border-radius: 10px 0 0 10px;">
+                            <i class="fa-solid fa-envelope text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control bg-light border-start-0" id="username" required placeholder="ejemplo@vita.com" style="border-radius: 0 10px 10px 0;">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label small fw-semibold" style="color: #000229;">Contraseña</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0" style="border-radius: 10px 0 0 10px;">
+                            <i class="fa-solid fa-lock text-muted"></i>
+                        </span>
+                        <input type="password" class="form-control bg-light border-start-0" id="password" required placeholder="••••••••" style="border-radius: 0 10px 10px 0;">
+                        <button class="input-group-text bg-light border-start-0" type="button" id="toggle-password" style="cursor: pointer; border-radius: 0 10px 10px 0;">
+                            <i class="fa-solid fa-eye text-muted" id="password-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-login w-100 mb-3" id="btn-login-submit">
+                    <i class="fa-solid fa-right-to-bracket me-2"></i> Iniciar Sesión
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -84,6 +236,15 @@
             if (response.ok) {
                 localStorage.setItem('token_acceso', data.access);
                 localStorage.setItem('token_refresco', data.refresh);
+
+                const meResponse = await fetch('/api/etl/auth/me/', {
+                    headers: { 'Authorization': `Bearer ${data.access}` }
+                });
+                if (meResponse.ok) {
+                    const meData = await meResponse.json();
+                    localStorage.setItem('usuario_rol', meData.rol);
+                }
+
                 window.location.href = '/dashboard/';
             } else {
                 alertBox.classList.remove('d-none');

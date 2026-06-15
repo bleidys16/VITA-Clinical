@@ -3,55 +3,313 @@
 {% block title %}Modelado IA | VITA Clinical{% endblock %}
 
 {% block content %}
-<h2 class="fw-bold mb-4" style="font-family: 'Epilogue'; color: var(--clia-jacarta);">
-    Monitor de Machine Learning (Random Forest)
-</h2>
+<style>
+    :root {
+        --pred-primary: #000229;
+        --pred-accent: #6A4DD4;
+        --pred-accent-light: #E2ECF5;
+    }
+    .pred-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        background: #fff;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .pred-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+    .pred-slider-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .pred-slider-value {
+        color: var(--pred-primary);
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+    .form-range::-webkit-slider-thumb {
+        background: var(--pred-primary);
+    }
+    .form-range::-moz-range-thumb {
+        background: var(--pred-primary);
+    }
+    .pred-check-card {
+        border: 1.5px solid #dee2e6;
+        border-radius: 12px;
+        padding: 12px 16px;
+        background: #fff;
+        transition: border-color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .pred-check-card:hover {
+        border-color: var(--pred-accent);
+    }
+    .pred-check-card .form-check-input:checked {
+        background-color: var(--pred-primary);
+        border-color: var(--pred-primary);
+    }
+    .pred-btn {
+        background-color: var(--pred-primary);
+        border: none;
+        border-radius: 12px;
+        color: #fff;
+        font-weight: 600;
+        padding: 12px;
+        transition: background-color 0.2s;
+    }
+    .pred-btn:hover {
+        background-color: #5a3db5;
+        color: #fff;
+    }
+    .pred-result-empty {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        min-height: 400px;
+    }
+    .pred-result-icon-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--pred-accent-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+    .pred-result-icon-circle i {
+        font-size: 2rem;
+        color: var(--pred-accent);
+    }
+</style>
 
-<div class="row g-4 mt-2">
-    <div class="col-12 col-md-5">
-        <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="p-4 rounded shadow-sm" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
+            <h2 class="fw-bold m-0" style="font-family: 'Epilogue'; color: #fff; font-size: 1.5rem;">
+                <i class="fa-solid fa-microchip me-2"></i> Motor de Predicción Clínica
+            </h2>
+            <p class="m-0 mt-1" style="opacity: 0.8; font-size: 0.95rem;">
+                Clasificador binario basado en Random Forest — Sano vs Enfermo
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- Columna izquierda: formulario -->
+    <div class="col-12 col-lg-7">
+        <div class="pred-card p-4 h-100">
             <h5 class="fw-bold mb-4" style="color: var(--clia-jacarta);">
-                <i class="fa-solid fa-brain me-2 text-primary"></i> Rendimiento del Predictor (Scikit-Learn)
+                <i class="fa-solid fa-heart-pulse me-2" style="color: var(--pred-accent);"></i> Variables clínicas
             </h5>
-            <div class="d-flex flex-column gap-3">
-                <div class="d-flex justify-content-between border-bottom pb-2">
-                    <span class="text-muted">Exactitud (Accuracy)</span>
-                    <strong class="text-success" id="ml-accuracy">0%</strong>
+
+            <div class="row g-4">
+
+                <!-- Edad -->
+                <div class="col-md-6">
+                    <div class="pred-slider-label mb-1">
+                        <span class="fw-semibold text-secondary small">Edad</span>
+                        <span class="pred-slider-value"><span id="val-edad">45</span> años</span>
+                    </div>
+                    <input type="range" class="form-range" id="pred-edad" min="15" max="100" value="45" step="1">
                 </div>
-                <div class="d-flex justify-content-between border-bottom pb-2">
-                    <span class="text-muted">Precisión (Precision)</span>
-                    <strong style="color: var(--clia-jacarta);" id="ml-precision">0%</strong>
+
+                <!-- IMC -->
+                <div class="col-md-6">
+                    <div class="pred-slider-label mb-1">
+                        <span class="fw-semibold text-secondary small">IMC</span>
+                        <span class="pred-slider-value"><span id="val-imc">27.5</span> kg/m²</span>
+                    </div>
+                    <input type="range" class="form-range" id="pred-imc" min="10" max="50" value="27.5" step="0.1">
                 </div>
-                <div class="d-flex justify-content-between border-bottom pb-2">
-                    <span class="text-muted">Sensibilidad (Recall)</span>
-                    <strong style="color: var(--clia-jacarta);" id="ml-recall">0%</strong>
+
+                <!-- Glucosa -->
+                <div class="col-md-6">
+                    <div class="pred-slider-label mb-1">
+                        <span class="fw-semibold text-secondary small">Glucosa</span>
+                        <span class="pred-slider-value"><span id="val-glucosa">100</span> mg/dL</span>
+                    </div>
+                    <input type="range" class="form-range" id="pred-glucosa" min="50" max="300" value="100" step="1">
                 </div>
-                <div class="d-flex justify-content-between pb-2">
-                    <span class="text-muted">Puntaje F1 (F1-Score)</span>
-                    <strong style="color: var(--clia-wisteria);" id="ml-f1">0%</strong>
+
+                <!-- Colesterol -->
+                <div class="col-md-6">
+                    <div class="pred-slider-label mb-1">
+                        <span class="fw-semibold text-secondary small">Colesterol</span>
+                        <span class="pred-slider-value"><span id="val-colesterol">190</span> mg/dL</span>
+                    </div>
+                    <input type="range" class="form-range" id="pred-colesterol" min="100" max="350" value="190" step="1">
                 </div>
+
+                <!-- Presión Sistólica -->
+                <div class="col-md-6">
+                    <div class="pred-slider-label mb-1">
+                        <span class="fw-semibold text-secondary small">Presión Sistólica</span>
+                        <span class="pred-slider-value"><span id="val-sistolica">120</span> mmHg</span>
+                    </div>
+                    <input type="range" class="form-range" id="pred-sistolica" min="80" max="220" value="120" step="1">
+                </div>
+
+                <!-- Frecuencia Cardíaca -->
+                <div class="col-md-6">
+                    <div class="pred-slider-label mb-1">
+                        <span class="fw-semibold text-secondary small">Frecuencia Cardíaca</span>
+                        <span class="pred-slider-value"><span id="val-fc">75</span> lpm</span>
+                    </div>
+                    <input type="range" class="form-range" id="pred-fc" min="40" max="140" value="75" step="1">
+                </div>
+
+            </div>
+
+            <!-- Factor de riesgo: fumador -->
+            <div class="mt-4">
+                <label class="fw-semibold text-secondary small mb-2">Factor de riesgo</label>
+                <div class="pred-check-card">
+                    <div>
+                        <div class="fw-semibold small" style="color: var(--clia-text-dark);">Fumador</div>
+                        <small class="text-muted">Consumo activo de tabaco</small>
+                    </div>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="pred-fumador" role="switch">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón -->
+            <div class="mt-4">
+                <button id="btn-predict" class="pred-btn w-100">
+                    <i class="fa-solid fa-sparkles me-2"></i> Ejecutar predicción
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="col-12 col-md-7">
-        <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
-            <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
-                <i class="fa-solid fa-border-all me-2 text-warning"></i> Matriz de Confusión (2x2)
+    <!-- Columna derecha: resultados -->
+    <div class="col-12 col-lg-5 d-flex flex-column gap-4">
+
+        <!-- Tarjeta: RESULTADO DEL MODELO -->
+        <div id="card-resultado" class="pred-card p-4" style="border: 1px solid #dee2e6;">
+            <div class="text-muted small fw-semibold mb-2" style="letter-spacing: 0.5px;">RESULTADO DEL MODELO</div>
+
+            <!-- Estado vacío (visible por defecto) -->
+            <div id="pred-empty">
+                <div class="pred-result-empty" style="min-height: 200px;">
+                    <div class="pred-result-icon-circle">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <h6 class="fw-bold mb-2" style="color: var(--clia-text-dark);">Esperando datos</h6>
+                    <p class="text-muted text-center px-4 small mb-0">
+                        Completá las variables clínicas y ejecutá la predicción.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Contenido con resultado (oculto por defecto) -->
+            <div id="pred-contenido" class="d-none">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span id="pred-badge" class="badge rounded-pill fs-6 fw-semibold px-3 py-2 d-inline-flex align-items-center gap-2" style="background:#fdf6ec;">
+                        <span id="pred-badge-dot" class="rounded-circle d-inline-block" style="width:10px;height:10px;"></span>
+                        <span id="pred-badge-text" style="color:#b3742e;"></span>
+                    </span>
+                    <span class="text-muted small" id="pred-score-label">Score: 0/6</span>
+                </div>
+
+                <div class="display-4 fw-bold mb-1" id="pred-porcentaje" style="color: var(--clia-text-dark);">0%</div>
+                <p class="text-secondary mb-3" id="pred-descripcion" style="font-size:0.95rem;">Probabilidad estimada</p>
+
+                <div class="progress" style="height: 6px; background: #f0f2f5; border-radius: 4px;">
+                    <div id="pred-bar" class="progress-bar" role="progressbar"
+                         style="width: 0%; background: #e6a23c; border-radius: 4px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+
+            <div id="pred-error" class="mt-3 d-none alert alert-danger py-2 small"></div>
+        </div>
+
+        <!-- Tarjeta: VARIABLES ANALIZADAS -->
+        <div id="card-variables" class="pred-card p-4 d-none" style="border: 1px solid #e9ecef;">
+            <div class="text-muted small fw-semibold mb-3" style="letter-spacing: 0.5px;">VARIABLES ANALIZADAS</div>
+            <div class="row g-0" id="pred-variables-grid"></div>
+            <div class="bg-light p-3 rounded-3 mt-3">
+                <p class="small text-muted mb-0">
+                    <i class="fa-solid fa-info-circle me-1"></i>
+                    Esta predicción es una estimación generada por un modelo entrenado y no sustituye el criterio clínico profesional.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Fila inferior: métricas + heatmap -->
+<div class="row g-4 mt-2">
+    <div class="col-12 col-lg-5">
+        <div class="pred-card p-4 h-100">
+            <h5 class="fw-bold mb-4" style="color: var(--clia-jacarta);">
+                <i class="fa-solid fa-brain me-2 text-primary"></i> Rendimiento del Predictor
+                <button id="btn-retrain-model" class="btn btn-sm ms-3" style="background: var(--clia-wisteria); color: #fff; border: none; display: none;" onclick="retrainModel()">
+                    <i class="fa-solid fa-rotate me-1"></i> Re-entrenar
+                </button>
             </h5>
-            <div id="chart-heatmap"></div>
+            <div id="ml-metrics-container" class="d-flex flex-column gap-3">
+                <div class="text-center py-5 text-muted">
+                    <i class="fa-solid fa-robot fa-3x mb-3" style="color: var(--clia-wisteria);"></i>
+                    <p class="mb-0">Cargando métricas...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-7">
+        <div class="pred-card p-4 h-100">
+            <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+                <i class="fa-solid fa-border-all me-2 text-warning"></i> Matriz de Confusión
+            </h5>
+            <div id="chart-heatmap">
+                <div class="text-center py-5 text-muted">
+                    <i class="fa-solid fa-chart-simple fa-3x mb-3" style="color: var(--clia-wisteria);"></i>
+                    <p class="mb-0">Entrená el modelo para ver la matriz 2×2.</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-    document.getElementById('nav-ml').classList.add('active');
+    const navMl = document.getElementById('nav-ml');
+    if (navMl) navMl.classList.add('active');
 
-    document.addEventListener("DOMContentLoaded", async function() {
+    // Sincronizar sliders con labels
+    document.querySelectorAll('.form-range').forEach(slider => {
+        const valId = 'val-' + slider.id.replace('pred-', '');
+        const valEl = document.getElementById(valId);
+        if (valEl) {
+            slider.addEventListener('input', () => { valEl.textContent = slider.value; });
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", async function () {
         const token = localStorage.getItem('token_acceso');
         if (!token) return;
 
+        await cargarMetricasML(token);
+
+        document.getElementById('btn-predict').addEventListener('click', function () {
+            predecirRiesgo(token);
+        });
+    });
+
+    async function cargarMetricasML(token) {
         try {
             const response = await fetch('/api/ml/model/metrics/', {
                 method: 'GET',
@@ -59,12 +317,30 @@
             });
             const data = await response.json();
 
-            if (response.ok && data.modelo_entrenado) {
-                document.getElementById('ml-accuracy').innerText = `${data.accuracy}%`;
-                document.getElementById('ml-precision').innerText = `${data.precision}%`;
-                document.getElementById('ml-recall').innerText = `${data.recall}%`;
-                document.getElementById('ml-f1').innerText = `${data.f1_score}%`;
+            const container = document.getElementById('ml-metrics-container');
+            const heatmapContainer = document.getElementById('chart-heatmap');
 
+            if (response.ok && data.modelo_entrenado) {
+                container.innerHTML = `
+                    <div class="d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">Exactitud (Accuracy)</span>
+                        <strong class="text-success" id="ml-accuracy">${data.accuracy}%</strong>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">Precisión (Precision)</span>
+                        <strong style="color: var(--clia-jacarta);">${data.precision}%</strong>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">Sensibilidad (Recall)</span>
+                        <strong style="color: var(--clia-jacarta);">${data.recall}%</strong>
+                    </div>
+                    <div class="d-flex justify-content-between pb-2">
+                        <span class="text-muted">Puntaje F1 (F1-Score)</span>
+                        <strong style="color: var(--clia-wisteria);">${data.f1_score}%</strong>
+                    </div>
+                `;
+
+                heatmapContainer.innerHTML = '';
                 const heatmapOptions = {
                     chart: { type: 'heatmap', height: 280, toolbar: { show: false } },
                     dataLabels: { enabled: true, style: { colors: ['#fff'] } },
@@ -72,10 +348,10 @@
                     series: data.heatmap,
                     xaxis: { type: 'category' }
                 };
-                const chart = new ApexCharts(document.querySelector("#chart-heatmap"), heatmapOptions);
+                const chart = new ApexCharts(heatmapContainer, heatmapOptions);
                 chart.render();
             } else {
-                document.querySelector('.card .d-flex.flex-column').innerHTML = `
+                container.innerHTML = `
                     <div class="text-center py-5 text-muted">
                         <i class="fa-solid fa-robot fa-3x mb-3" style="color: var(--clia-wisteria);"></i>
                         <p class="mb-0">Aún no se ha entrenado ningún modelo.</p>
@@ -86,6 +362,206 @@
         } catch (error) {
             console.error("Error al cargar métricas de ML:", error);
         }
-    });
+    }
+
+    async function predecirRiesgo(token) {
+        const edad = document.getElementById('pred-edad').value;
+        const imc = document.getElementById('pred-imc').value;
+        const glucosa = document.getElementById('pred-glucosa').value;
+        const colesterol = document.getElementById('pred-colesterol').value;
+        const sistolica = document.getElementById('pred-sistolica').value;
+        const fc = document.getElementById('pred-fc').value;
+        const fumador = document.getElementById('pred-fumador').checked ? '1' : '0';
+
+        const btn = document.getElementById('btn-predict');
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Analizando...`;
+
+        document.getElementById('pred-contenido').classList.add('d-none');
+        document.getElementById('pred-empty').classList.remove('d-none');
+        document.getElementById('card-variables').classList.add('d-none');
+        document.getElementById('pred-error').classList.add('d-none');
+
+        try {
+            const response = await fetch('/api/ml/predict/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    edad: parseFloat(edad),
+                    imc: parseFloat(imc),
+                    glucosa: parseFloat(glucosa),
+                    colesterol: parseFloat(colesterol),
+                    presion_sistolica: parseFloat(sistolica),
+                    frecuencia_cardiaca: parseFloat(fc),
+                    fumador: fumador
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                const probEnfermo = data.probabilidad_enfermo;
+
+                document.getElementById('pred-empty').classList.add('d-none');
+                document.getElementById('pred-contenido').classList.remove('d-none');
+                document.getElementById('card-variables').classList.remove('d-none');
+
+                // Score (basado en 6 criterios clínicos)
+                let score = 0;
+                if (parseFloat(glucosa) > 100) score++;
+                if (parseFloat(colesterol) > 200) score++;
+                if (parseFloat(imc) >= 25) score++;
+                if (parseFloat(sistolica) > 130) score++;
+                if (parseFloat(fc) > 90) score++;
+                if (parseFloat(edad) > 50) score++;
+                document.getElementById('pred-score-label').textContent = `Score: ${score}/6`;
+
+                // Nivel de riesgo según score
+                let nivel, dotColor, badgeBg, badgeTextColor, barColor, borderColor, cardBorder, descripcion, pct;
+                if (score <= 2) {
+                    nivel = 'Riesgo Bajo';
+                    dotColor = '#48BB78';
+                    badgeBg = '#e6f7e6';
+                    badgeTextColor = '#2f855a';
+                    barColor = '#48BB78';
+                    borderColor = '#48BB78';
+                    pct = (100 - probEnfermo).toFixed(1);
+                    descripcion = 'Probabilidad estimada de estado saludable';
+                } else if (score <= 4) {
+                    nivel = 'Riesgo Moderado';
+                    dotColor = '#6A4DD4';
+                    badgeBg = '#EDE8FB';
+                    badgeTextColor = '#000229';
+                    barColor = '#6A4DD4';
+                    borderColor = '#6A4DD4';
+                    pct = probEnfermo.toFixed(1);
+                    descripcion = 'Probabilidad estimada de evento cardiovascular';
+                } else {
+                    nivel = 'Riesgo Alto';
+                    dotColor = '#E53E3E';
+                    badgeBg = '#fde8e8';
+                    badgeTextColor = '#c53030';
+                    barColor = '#E53E3E';
+                    borderColor = '#E53E3E';
+                    pct = probEnfermo.toFixed(1);
+                    descripcion = 'Alta probabilidad de evento cardiovascular';
+                }
+
+                // Badge
+                document.getElementById('pred-badge-dot').style.background = dotColor;
+                const badgeText = document.getElementById('pred-badge-text');
+                badgeText.textContent = nivel;
+                badgeText.style.color = badgeTextColor;
+                const badge = document.getElementById('pred-badge');
+                badge.style.background = badgeBg;
+
+                // Card border
+                document.getElementById('card-resultado').style.borderColor = borderColor;
+
+                // Porcentaje
+                document.getElementById('pred-porcentaje').textContent = `${pct}%`;
+                document.getElementById('pred-porcentaje').style.color = dotColor;
+
+                // Descripción
+                document.getElementById('pred-descripcion').textContent = descripcion;
+
+                // Barra de progreso
+                const bar = document.getElementById('pred-bar');
+                bar.style.width = `${pct}%`;
+                bar.style.background = barColor;
+                bar.setAttribute('aria-valuenow', pct);
+
+                // Variables analizadas grid
+                const vars = [
+                    { label: 'Edad', value: `${edad} años` },
+                    { label: 'IMC', value: `${imc} kg/m²` },
+                    { label: 'Glucosa', value: `${glucosa} mg/dL` },
+                    { label: 'Colesterol', value: `${colesterol} mg/dL` },
+                    { label: 'Presión Sistólica', value: `${sistolica} mmHg` },
+                    { label: 'Frecuencia Cardíaca', value: `${fc} lpm` },
+                    { label: 'Fumador', value: fumador === '1' ? 'Sí' : 'No' }
+                ];
+                const grid = document.getElementById('pred-variables-grid');
+                let gridHtml = '';
+                for (let i = 0; i < vars.length; i += 2) {
+                    const v1 = vars[i];
+                    const v2 = vars[i + 1];
+                    const isLast = i + 2 >= vars.length;
+                    if (v2) {
+                        gridHtml += `
+                        <div class="row gx-5 border-bottom border-light py-3">
+                            <div class="col-md-6 d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">${v1.label}</span>
+                                <span class="fw-bold text-dark small">${v1.value}</span>
+                            </div>
+                            <div class="col-md-6 d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">${v2.label}</span>
+                                <span class="fw-bold text-dark small">${v2.value}</span>
+                            </div>
+                        </div>`;
+                    } else {
+                        gridHtml += `
+                        <div class="row gx-5 py-3">
+                            <div class="col-12 d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">${v1.label}</span>
+                                <span class="fw-bold text-dark small">${v1.value}</span>
+                            </div>
+                        </div>`;
+                    }
+                }
+                grid.innerHTML = gridHtml;
+            } else {
+                document.getElementById('pred-empty').classList.add('d-none');
+                const errorDiv = document.getElementById('pred-error');
+                errorDiv.textContent = data.error || 'Error al realizar la predicción.';
+                errorDiv.classList.remove('d-none');
+            }
+        } catch (error) {
+            console.error("Error en predicción:", error);
+            document.getElementById('pred-empty').classList.add('d-none');
+            const errorDiv = document.getElementById('pred-error');
+            errorDiv.textContent = 'Error de conexión con el servidor.';
+            errorDiv.classList.remove('d-none');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-sparkles me-2"></i> Ejecutar predicción`;
+        }
+    }
+
+    // Mostrar botón de re-entrenamiento si el rol lo permite
+    const userRole = localStorage.getItem('usuario_rol');
+    if (userRole === 'ANALISTA' || userRole === 'ADMIN') {
+        const retrainBtn = document.getElementById('btn-retrain-model');
+        if (retrainBtn) retrainBtn.style.display = 'inline-block';
+    }
+
+    async function retrainModel() {
+        const btn = document.getElementById('btn-retrain-model');
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Re-entrenando...`;
+
+        const token = localStorage.getItem('token_acceso');
+        try {
+            const response = await fetch('/api/ml/train/', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert('Modelo re-entrenado exitosamente.');
+                await cargarMetricasML(token);
+            } else {
+                alert(data.error || 'Error al re-entrenar el modelo.');
+            }
+        } catch (error) {
+            alert('Error de conexión al re-entrenar.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-rotate me-1"></i> Re-entrenar`;
+        }
+    }
 </script>
 {% endblock %}

@@ -1,4 +1,4 @@
-version: '3.8'
+name: vita-clinical
 
 services:
   db:
@@ -22,35 +22,51 @@ services:
 
   web:
     build: ./backend
+    image: vita-clinical-web
     container_name: vita_django
     command: >
       sh -c "python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app
+      - ./frontend:/frontend
     ports:
       - "8000:8000"
     environment:
       - DEBUG=True
       - SECRET_KEY=django-insecure-docker-local-key
       - ALLOWED_HOSTS=localhost,127.0.0.1
-      - DATABASE_URL=postgres://postgres:admin_password_segura@db:5432/health_clinical_db
+      - DB_NAME=health_clinical_db
+      - DB_USER=postgres
+      - DB_PASSWORD=admin_password_segura
+      - DB_HOST=db
+      - DB_PORT=5432
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CACHE_URL=redis://redis:6379/1
     depends_on:
       - db
       - redis
 
   celery:
     build: ./backend
+    image: vita-clinical-celery
     container_name: vita_celery
     command: celery -A config worker --loglevel=info --pool=solo
     volumes:
       - ./backend:/app
     environment:
-      - DATABASE_URL=postgres://postgres:admin_password_segura@db:5432/health_clinical_db
+      - SECRET_KEY=django-insecure-docker-local-key
+      - DEBUG=True
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - DB_NAME=health_clinical_db
+      - DB_USER=postgres
+      - DB_PASSWORD=admin_password_segura
+      - DB_HOST=db
+      - DB_PORT=5432
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CACHE_URL=redis://redis:6379/1
     depends_on:
       - db
       - redis
