@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Análisis Estadístico | VITA Clinical{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="fw-bold mb-4" style="font-family: 'Epilogue'; color: var(--clia-jacarta);">
+        Análisis Estadístico Descriptivo del Dataset
+    </h2>
+
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
+        <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+            <i class="fa-solid fa-calculator me-2 text-primary"></i> Variables Biométricas Numéricas
+        </h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Métrica Matemática</th>
+                        <th>Edad</th>
+                        <th>Presión Sistólica (mmHg)</th>
+                        <th>Glucosa (mg/dL)</th>
+                        <th>IMC</th>
+                        <th>Frecuencia Cardíaca (lpm)</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-pandas-descriptiva">
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            <i class="fa-solid fa-circle-notch fa-spin me-2"></i> Calculando estadísticas con Pandas...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('nav-estadisticas').classList.add('active');
+
+    document.addEventListener("DOMContentLoaded", async function () {
+        const token = localStorage.getItem('token_acceso');
+        if (!token) return;
+
+        try {
+            const response = await fetch('/api/etl/estadisticas/pandas/', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const stats = await response.json();
+                renderizarEstadisticas(stats);
+            } else {
+                document.getElementById('tabla-pandas-descriptiva').innerHTML = `
+                    <tr><td colspan="6" class="text-center text-danger py-4">Error al cargar estadísticas.</td></tr>
+                `;
+            }
+        } catch (error) {
+            console.error("Error cargando estadísticas:", error);
+            document.getElementById('tabla-pandas-descriptiva').innerHTML = `
+                <tr><td colspan="6" class="text-center text-danger py-4">Error de conexión.</td></tr>
+            `;
+        }
+    });
+
+    function renderizarEstadisticas(stats) {
+        // stats is a dict like:
+        // {
+        //   "presion_sistolica": {"count": 1800, "mean": 120.5, "std": 14.2, "min": 90, "25%": 110, "50%": 120, "75%": 130, "max": 180},
+        //   "glucosa": {...}, ...
+        // }
+
+        const metricNames = {
+            "count": "Conteo (Total)",
+            "mean": "Media (Promedio)",
+            "std": "Desviación Estándar",
+            "min": "Valor Mínimo",
+            "25%": "Percentil 25 (Q1)",
+            "50%": "Mediana (Q2)",
+            "75%": "Percentil 75 (Q3)",
+            "max": "Valor Máximo"
+        };
+
+        const metrics = ["count", "mean", "50%", "std", "min", "25%", "75%", "max"];
+
+        let html = '';
+        metrics.forEach(m => {
+            const label = metricNames[m] || m;
+
+            // Function to format safely
+            const formatValue = (col) => {
+                if (!stats[col] || stats[col][m] === undefined) return '-';
+                if (m === 'count') return Math.round(stats[col][m]);
+                return Number(stats[col][m]).toFixed(2);
+            };
+
+            const edad = formatValue('edad');
+            const ps = formatValue('presion_sistolica');
+            const gl = formatValue('glucosa');
+            const imc = formatValue('imc');
+            const fc = formatValue('frecuencia_cardiaca');
+
+            html += `
+                <tr>
+                    <td class="fw-semibold text-muted">${label}</td>
+                    <td>${edad}</td>
+                    <td>${ps}</td>
+                    <td>${gl}</td>
+                    <td>${imc}</td>
+                    <td>${fc}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('tabla-pandas-descriptiva').innerHTML = html;
+    }
+</script>
+{% endblock %}
