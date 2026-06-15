@@ -1,9 +1,8 @@
-from django.contrib import admin
-from django.urls import path, include
-from apps.analytics.views import DashboardKPIsView
+from django.urls import path
+from apps.analytics.views import DashboardKPIsView, DescriptiveAnalyticsView, PacientesPorCriterioView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/etl/', include('apps.etl.urls')),
-    path('api/analytics/', include('apps.analytics.urls')), 
+    path('kpis/', DashboardKPIsView.as_view(), name='dashboard-kpis'),
+    path('descriptiva/', DescriptiveAnalyticsView.as_view(), name='analytics-descriptiva'),
+    path('pacientes-por-criterio/', PacientesPorCriterioView.as_view(), name='pacientes-por-criterio'),
 ]

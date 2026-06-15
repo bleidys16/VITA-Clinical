@@ -1,13 +1,14 @@
+let chartDonut = null;
+let chartBarras = null;
+
 document.addEventListener("DOMContentLoaded", function () {
     const token = localStorage.getItem('token_acceso');
     if (!token) return;
 
     cargarDatosDashboard(token);
-    cargarMetricasMachineLearning(token);
 
     document.getElementById('btn-refresh-dashboard')?.addEventListener('click', function() {
         cargarDatosDashboard(token);
-        cargarMetricasMachineLearning(token);
     });
 });
 
@@ -19,6 +20,11 @@ async function cargarDatosDashboard(token) {
         });
 
         const data = await response.json();
+
+        if (response.ok && data.sistema_vacio) {
+            mostrarDashboardVacio();
+            return;
+        }
 
         if (response.ok && !data.sistema_vacio) {
             document.getElementById('kpi-total').innerText = data.kpis.total_registros;
@@ -32,168 +38,133 @@ async function cargarDatosDashboard(token) {
             document.getElementById('ind-criticos').innerText = ic.porcentaje_criticos ? `${ic.porcentaje_criticos}%` : '—';
             document.getElementById('ind-alto').innerText = ic.porcentaje_riesgo_alto ? `${ic.porcentaje_riesgo_alto}%` : '—';
 
+            inicializarGraficaDonut(data.graficas);
             inicializarGraficaBarras(data.graficas);
-            inicializarGraficaTorta(data.graficas);
-            inicializarGraficaLineas(data.graficas);
+            renderizarUltimasConsultas(data.ultimas_consultas);
         }
     } catch (error) {
-        console.error("Error al renderizar las analíticas de ApexCharts:", error);
+        console.error("Error al renderizar el dashboard:", error);
+    }
+}
+
+function mostrarDashboardVacio() {
+    document.getElementById('kpi-total').innerText = '0';
+    document.getElementById('kpi-criticos').innerText = '0';
+    document.getElementById('kpi-edad-promedio').innerText = '0';
+    document.getElementById('kpi-riesgo').innerText = '0%';
+    document.getElementById('ultimas-consultas').innerHTML = `
+        <div class="text-center text-muted py-4">
+            <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 d-block" style="color:var(--clia-wisteria);"></i>
+            <small>No hay datos en el dashboard.<br>Cargá un dataset desde <a href="/cargar-dataset/">Cargar Dataset</a>.</small>
+        </div>`;
+    if (chartDonut) { chartDonut.destroy(); chartDonut = null; }
+    if (chartBarras) { chartBarras.destroy(); chartBarras = null; }
+}
+
+function inicializarGraficaDonut(graficas) {
+    const torta = graficas.riesgo_torta || { labels: [], series: [] };
+    const total = torta.series.reduce((a, b) => a + b, 0);
+
+    const options = {
+        chart: { type: 'donut', height: 280, toolbar: { show: false } },
+        labels: torta.labels.length ? torta.labels : ['Sin datos'],
+        series: torta.series.length ? torta.series : [1],
+        colors: ['#6A4DD4', '#CEB5D4', '#000229', '#6E3377'],
+        legend: { position: 'bottom', fontSize: '12px', horizontalAlign: 'center' },
+        dataLabels: {
+            enabled: true,
+            style: { fontSize: '13px', fontWeight: 'bold' },
+            formatter: function (val) { return val.toFixed(1) + '%'; }
+        },
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '60%',
+                    labels: {
+                        show: true,
+                        total: {
+                            show: true,
+                            label: 'Total',
+                            formatter: function () { return total; }
+                        }
+                    }
+                },
+                expandOnClick: true
+            }
+        },
+        tooltip: { y: { formatter: (val) => `${val} pacientes` } },
+        responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }]
+    };
+    if (document.querySelector("#chart-donut")) {
+        if (chartDonut) chartDonut.destroy();
+        chartDonut = new ApexCharts(document.querySelector("#chart-donut"), options);
+        chartDonut.render();
     }
 }
 
 function inicializarGraficaBarras(graficas) {
     const segmentos = graficas.barras_segmentacion || [];
-    const patologiasFijas = ['Hipertensión', 'Diabetes Tipo 2', 'Obesidad'];
-
-    const series = patologiasFijas.map(nombre => ({
-        name: nombre,
-        data: segmentos.map(seg => {
-            const encontrado = (seg.diagnosticos || []).find(d => d.nombre === nombre);
-            return encontrado ? encontrado.cantidad : 0;
-        })
-    }));
-
-    const otrasData = segmentos.map(seg => {
-        const fijas = patologiasFijas.map(n => {
-            const encontrado = (seg.diagnosticos || []).find(d => d.nombre === n);
-            return encontrado ? encontrado.cantidad : 0;
-        });
-        const sumaFijas = fijas.reduce((a, b) => a + b, 0);
-        const totalSeg = seg.total || 0;
-        return Math.max(0, totalSeg - sumaFijas);
-    });
-    series.push({ name: 'Otras condiciones', data: otrasData });
+    const categorias = graficas.labels_barras || ['<30', '30-49', '50-69', '70+'];
+    const datos = segmentos.map(s => s.total || 0);
 
     const options = {
-        chart: { type: 'bar', height: 320, stacked: true, toolbar: { show: false } },
-        plotOptions: { bar: { borderRadius: 4, horizontal: false } },
-        colors: ['#000229', '#6A4DD4', '#A4A7E3', '#CEB5D4'],
-        series: series,
+        chart: { type: 'bar', height: 300, toolbar: { show: false } },
+        plotOptions: { bar: { borderRadius: 4, horizontal: false, distributed: true } },
+        colors: ['#6A4DD4', '#CEB5D4', '#000229', '#6E3377'],
+        series: [{ name: 'Pacientes', data: datos }],
         xaxis: {
-            categories: graficas.labels_barras || ['<30', '30-49', '50-69', '70+'],
-            title: { text: 'Rangos de Edad' }
+            categories: categorias,
+            title: { text: 'Rango de Edad' }
         },
         yaxis: { title: { text: 'Número de Pacientes' } },
         grid: { show: false },
-        legend: { position: 'right', fontSize: '12px', offsetY: 40 },
-        dataLabels: { enabled: false }
+        dataLabels: { enabled: true, style: { colors: ['#fff'], fontSize: '14px', fontWeight: 'bold' } }
     };
     if (document.querySelector("#chart-barras")) {
-        const chart = new ApexCharts(document.querySelector("#chart-barras"), options);
-        chart.render();
+        if (chartBarras) chartBarras.destroy();
+        chartBarras = new ApexCharts(document.querySelector("#chart-barras"), options);
+        chartBarras.render();
     }
 }
 
-function inicializarGraficaTorta(graficas) {
-    const torta = graficas.riesgo_torta || { labels: [], series: [] };
-    const options = {
-        chart: { type: 'donut', height: 300, toolbar: { show: false } },
-        labels: torta.labels.length ? torta.labels : ['Sin datos'],
-        series: torta.series.length ? torta.series : [1],
-        colors: ['#48BB78', '#ECC94B', '#CEB5D4', '#E53E3E'],
-        legend: { position: 'bottom', fontSize: '12px', horizontalAlign: 'center' },
-        dataLabels: { enabled: true, style: { fontSize: '14px', fontWeight: 'bold' } },
-        plotOptions: { pie: { donut: { size: '60%' }, expandOnClick: true } },
-        tooltip: { y: { formatter: (val) => `${val} pacientes` } },
-        responsive: [{ breakpoint: 480, options: { legend: { position: 'bottom' } } }]
+function renderizarUltimasConsultas(pacientes) {
+    const container = document.getElementById('ultimas-consultas');
+    if (!pacientes || !pacientes.length) {
+        container.innerHTML = '<div class="text-center text-muted py-4"><small>Sin consultas recientes</small></div>';
+        return;
+    }
+
+    const riesgoColors = {
+        'Bajo': { bg: '#48BB78', text: '#fff' },
+        'Medio': { bg: '#ECC94B', text: '#333' },
+        'Alto': { bg: '#f97316', text: '#fff' },
+        'Crítico': { bg: '#dc2626', text: '#fff' },
     };
-    if (document.querySelector("#chart-radar")) {
-        const chart = new ApexCharts(document.querySelector("#chart-radar"), options);
-        chart.render();
-    }
-}
 
-function inicializarGraficaLineas(graficas) {
-    const tendencias = graficas.tendencias || [];
-
-    const bloques = [
-        { label: '15-25', min: 15, max: 25 },
-        { label: '26-35', min: 26, max: 35 },
-        { label: '36-45', min: 36, max: 45 },
-        { label: '46-55', min: 46, max: 55 },
-        { label: '56-65', min: 56, max: 65 },
-        { label: '66+', min: 66, max: 200 },
-    ];
-
-    const promediosPorBloque = bloques.map(bloque => {
-        const filtradas = tendencias.filter(t => t.edad >= bloque.min && t.edad <= bloque.max);
-        const sistolicas = filtradas.filter(t => t.presion_sistolica).map(t => t.presion_sistolica);
-        const glucosas = filtradas.filter(t => t.glucosa).map(t => t.glucosa);
-        return {
-            label: bloque.label,
-            sistolica: sistolicas.length ? Math.round(sistolicas.reduce((a, b) => a + b, 0) / sistolicas.length) : 0,
-            glucosa: glucosas.length ? Math.round((glucosas.reduce((a, b) => a + b, 0) / glucosas.length) * 10) / 10 : 0,
-        };
-    });
-
-    const labels = promediosPorBloque.map(b => b.label);
-    const dataSistolica = promediosPorBloque.map(b => b.sistolica);
-    const dataGlucosa = promediosPorBloque.map(b => b.glucosa);
-
-    const options = {
-        chart: { type: 'line', height: 320, zoom: { enabled: false }, toolbar: { show: false } },
-        stroke: { curve: 'smooth', width: 3 },
-        markers: { size: 0 },
-        series: [
-            { name: 'TA Sistólica Promedio (mmHg)', data: dataSistolica },
-            { name: 'Glucosa Promedio (mg/dL)', data: dataGlucosa }
-        ],
-        xaxis: {
-            categories: labels,
-            title: { text: 'Grupo Etario' }
-        },
-        yaxis: [
-            { title: { text: 'TA Sistólica (mmHg)' }, min: 80, max: 200 },
-            { opposite: true, title: { text: 'Glucosa (mg/dL)' }, min: 50, max: 300 }
-        ],
-        colors: ['#E53E3E', '#000229'],
-        grid: { show: false },
-        legend: { position: 'top', fontSize: '12px' }
-    };
-    if (document.querySelector("#chart-lineas")) {
-        const chart = new ApexCharts(document.querySelector("#chart-lineas"), options);
-        chart.render();
-    }
-}
-
-async function cargarMetricasMachineLearning(token) {
-    try {
-        const response = await fetch('/api/ml/model/metrics/', {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
-
-        if (response.ok && data.modelo_entrenado) {
-            document.getElementById('ml-accuracy').innerText = `${data.accuracy}%`;
-            document.getElementById('ml-precision').innerText = `${data.precision}%`;
-            document.getElementById('ml-recall').innerText = `${data.recall}%`;
-            document.getElementById('ml-f1').innerText = `${data.f1_score}%`;
-
-            inicializarHeatmap(data.heatmap);
-        } else {
-            document.querySelectorAll('#ml-accuracy, #ml-precision, #ml-recall, #ml-f1').forEach(el => el.innerText = '—');
-            const hm = document.getElementById('chart-heatmap');
-            if (hm) hm.innerHTML = `
-                <div class="text-center py-4 text-muted">
-                    <i class="fa-solid fa-chart-simple fa-2x mb-2" style="color: var(--clia-wisteria);"></i>
-                    <p class="mb-0 small">Sin modelo entrenado</p>
+    const items = pacientes.map(p => {
+        const rc = riesgoColors[p.riesgo] || { bg: '#6B7280', text: '#fff' };
+        const fecha = p.fecha_consulta ? new Date(p.fecha_consulta).toLocaleDateString('es-CO') : '';
+        return `
+            <div class="d-flex align-items-center py-2 border-bottom border-light">
+                <div class="d-flex align-items-center justify-content-center rounded-circle me-3"
+                     style="width:38px;height:38px;background:#eef2ff;color:#4F46E5;flex-shrink:0;">
+                    <i class="fa-solid ${p.sexo_icon}"></i>
                 </div>
-            `;
-        }
-    } catch (error) {
-        console.error("Error al cargar métricas de ML:", error);
-    }
-}
+                <div class="flex-grow-1 min-width-0">
+                    <div class="fw-semibold small text-truncate">${p.nombres} ${p.apellidos}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">
+                        ${p.edad} años · ${p.diagnostico.length > 35 ? p.diagnostico.substring(0,35)+'…' : p.diagnostico}
+                    </div>
+                </div>
+                <div class="text-end ms-2 flex-shrink-0">
+                    <span class="badge rounded-pill" style="background:${rc.bg};color:${rc.text};font-size:0.7rem;">
+                        ${p.riesgo}
+                    </span>
+                    ${fecha ? `<div class="text-muted" style="font-size:0.65rem;">${fecha}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
 
-function inicializarHeatmap(heatmapData) {
-    const options = {
-        chart: { type: 'heatmap', height: 280, toolbar: { show: false } },
-        dataLabels: { enabled: true, style: { colors: ['#fff'] } },
-        colors: ['#000229'],
-        series: heatmapData,
-        xaxis: { type: 'category' }
-    };
-    const chart = new ApexCharts(document.querySelector("#chart-heatmap"), options);
-    chart.render();
+    container.innerHTML = items;
 }

@@ -3,8 +3,8 @@
 from django.urls import path
 from .views import (
     RunETLView, ETLLogListView, ResetDataView, AuthMeView,
-    DashboardDataView, ETLEstadoView, ReportesView, PacienteListView,
-    PacienteCreateView, PacienteDetailView,
+    ProfileUpdateView, DashboardDataView, ETLEstadoView, ReportesView,
+    PacienteListView, PacienteCreateView, PacienteDetailView,
     UsuarioListView, UsuarioCreateView, UsuarioUpdateView, UsuarioDeleteView,
 )
 
@@ -13,6 +13,7 @@ urlpatterns = [
     path('logs/', ETLLogListView.as_view(), name='etl-logs'),
     path('reset/', ResetDataView.as_view(), name='etl-reset'),
     path('auth/me/', AuthMeView.as_view(), name='etl-auth-me'),
+    path('auth/profile/', ProfileUpdateView.as_view(), name='etl-profile'),
     path('analytics/dashboard/', DashboardDataView.as_view(), name='data-dashboard'),
     path('pacientes/', PacienteListView.as_view(), name='etl-pacientes'),
     path('pacientes/create/', PacienteCreateView.as_view(), name='paciente-create'),

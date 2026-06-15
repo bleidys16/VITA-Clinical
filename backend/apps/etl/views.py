@@ -18,8 +18,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from .services import PipelineETL
 from .models import Paciente, HistorialETL, DashboardKPIs, Perfil
-from .analytics import calcular_analitica_dataset
-from apps.machine_learning.services import MotorPredictivoVITA
+from .analytics import calcular_analitica_dataset, recalcular_kpis_desde_db
 from .tasks import ejecutar_pipeline_asincrono, TASK_ID_KEY
 
 
@@ -214,12 +213,63 @@ class AuthMeView(APIView):
             "rol": rol,
         })
 
+class ProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        rol = user.perfil.rol if hasattr(user, 'perfil') else None
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "rol": rol,
+        })
+
+    def put(self, request):
+        user = request.user
+        data = request.data
+
+        username = data.get('username', '').strip()
+        email = data.get('email', '').strip()
+        current_password = data.get('current_password', '')
+        new_password = data.get('new_password', '')
+
+        if username and username != user.username:
+            if User.objects.filter(username=username).exclude(id=user.id).exists():
+                return Response({"error": "El nombre de usuario ya está en uso"}, status=status.HTTP_400_BAD_REQUEST)
+            user.username = username
+
+        if email and email != user.email:
+            if User.objects.filter(email=email).exclude(id=user.id).exists():
+                return Response({"error": "El correo ya está registrado"}, status=status.HTTP_400_BAD_REQUEST)
+            user.email = email
+
+        if current_password and new_password:
+            if not user.check_password(current_password):
+                return Response({"error": "Contraseña actual incorrecta"}, status=status.HTTP_400_BAD_REQUEST)
+            if len(new_password) < 6:
+                return Response({"error": "La nueva contraseña debe tener al menos 6 caracteres"}, status=status.HTTP_400_BAD_REQUEST)
+            user.set_password(new_password)
+
+        user.save()
+        rol = user.perfil.rol if hasattr(user, 'perfil') else None
+        return Response({
+            "mensaje": "Perfil actualizado correctamente",
+            "username": user.username,
+            "email": user.email,
+            "rol": rol,
+        })
+
 class DashboardDataView(APIView):
     permission_classes = [IsAuthenticated, EsAdminOMedico]
 
     def get(self, request, format=None):
-        ultimo_kpi = DashboardKPIs.objects.first()
-        
+        ultimo_kpi = DashboardKPIs.objects.order_by('-fecha_calculo').first()
+
+        if not ultimo_kpi and Paciente.objects.exists():
+            ultimo_kpi = recalcular_kpis_desde_db()
+
         if not ultimo_kpi:
             return Response({"sistema_vacio": True}, status=status.HTTP_200_OK)
 
@@ -227,6 +277,15 @@ class DashboardDataView(APIView):
         total = pacientes.count()
 
         edad_promedio = round(ultimo_kpi.edad_media, 1)
+
+        riesgo_promedio = ultimo_kpi.riesgo_promedio
+        if not riesgo_promedio:
+            riesgo_map = {'Bajo': 0.25, 'Medio': 0.50, 'Alto': 0.75, 'Crítico': 1.0}
+            valores = []
+            for r in ['Bajo', 'Medio', 'Alto', 'Crítico']:
+                cnt = pacientes.filter(riesgo_enfermedad=r).count()
+                valores.extend([riesgo_map[r]] * cnt)
+            riesgo_promedio = round((sum(valores) / len(valores) * 100) if valores else 0, 2)
 
         rangos_edad = [
             {'rango': '<30', 'min': 0, 'max': 29},
@@ -274,13 +333,28 @@ class DashboardDataView(APIView):
                         'cantidad': count
                     })
 
+        ultimas_consultas = []
+        for p in pacientes.order_by('-fecha_consulta', '-id_paciente')[:6]:
+            sexo_icon = 'fa-venus' if p.sexo and 'femenino' in p.sexo.lower() else 'fa-mars'
+            ultimas_consultas.append({
+                'id': p.id_paciente,
+                'nombres': p.nombres,
+                'apellidos': p.apellidos,
+                'edad': p.edad,
+                'sexo': p.sexo,
+                'sexo_icon': sexo_icon,
+                'diagnostico': p.diagnostico_preliminar or 'Sin diagnóstico',
+                'riesgo': p.riesgo_enfermedad or 'Sin riesgo',
+                'fecha_consulta': p.fecha_consulta.isoformat() if p.fecha_consulta else None,
+            })
+
         return Response({
             "sistema_vacio": False,
             "kpis": {
                 "total_registros": ultimo_kpi.total_registros,
                 "pacientes_criticos": ultimo_kpi.pacientes_criticos,
                 "edad_promedio": edad_promedio,
-                "riesgo_promedio": round(ultimo_kpi.riesgo_promedio, 2)
+                "riesgo_promedio": riesgo_promedio
             },
             "graficas": {
                 "barras_segmentacion": segmentacion_edad,
@@ -309,7 +383,8 @@ class DashboardDataView(APIView):
                 "imc_promedio": round(pacientes.filter(imc__isnull=False).aggregate(Avg('imc'))['imc__avg'] or 0, 1),
                 "porcentaje_criticos": round((ultimo_kpi.pacientes_criticos / total * 100), 1) if total else 0,
                 "porcentaje_riesgo_alto": round((pacientes.filter(riesgo_enfermedad='Alto').count() / total * 100), 1) if total else 0,
-            }
+            },
+            "ultimas_consultas": ultimas_consultas,
         }, status=status.HTTP_200_OK)
 
 

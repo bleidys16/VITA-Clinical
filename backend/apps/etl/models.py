@@ -71,23 +71,30 @@ class Perfil(models.Model):
         return f"{self.user.email} - {self.get_rol_display()}"
 
 class DashboardKPIs(models.Model):
-    # Relación opcional con el log del ETL para saber de qué carga provienen estos KPIs
     fecha_calculo = models.DateTimeField(auto_now_add=True)
-    
+
     # 1. KPIs de Control Obligatorios
     total_registros = models.IntegerField(default=0)
     pacientes_criticos = models.IntegerField(default=0)
     pacientes_hipertensos = models.IntegerField(default=0)
     pacientes_diabeticos = models.IntegerField(default=0)
     pacientes_fumadores = models.IntegerField(default=0)
-    riesgo_promedio = models.FloatField(default=0.0) # Almacenará el % promedio
+    pacientes_obesos = models.IntegerField(default=0)
+    pacientes_antecedentes = models.IntegerField(default=0)
+    pacientes_alcohol = models.IntegerField(default=0)
+    pacientes_saturacion_baja = models.IntegerField(default=0)
+    riesgo_promedio = models.FloatField(default=0.0)
 
-    # 2. Estadística Descriptiva (Ejemplo con Edad y Glucosa)
+    # 2. Alertas Clínicas Individuales
+    alertas_sistolica = models.IntegerField(default=0)
+    alertas_glucosa = models.IntegerField(default=0)
+    alertas_saturacion = models.IntegerField(default=0)
+
+    # 3. Estadística Descriptiva
     edad_media = models.FloatField(default=0.0)
     edad_mediana = models.FloatField(default=0.0)
     edad_moda = models.FloatField(default=0.0)
     edad_desviacion = models.FloatField(default=0.0)
-    
     glucosa_media = models.FloatField(default=0.0)
     glucosa_desviacion = models.FloatField(default=0.0)
 

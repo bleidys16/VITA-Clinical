@@ -7,74 +7,74 @@
 
     <div class="row mb-4">
         <div class="col-12">
-            <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
-                <div>
-                    <h1 class="m-0" style="font-weight: 800; font-size: 1.8rem; color: #fff;">
+            <div class="p-3 p-md-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
+                <div class="min-width-0 me-2">
+                    <h1 class="m-0" style="font-weight: 800; font-size: clamp(1rem, 3.5vw, 1.8rem); color: #fff; line-height:1.2;">
                         Vital Tracking in Healthcare Analytics
                     </h1>
-                    <p class="m-0 mt-1" style="opacity: 0.8; font-size: 1rem;">
+                    <p class="m-0 mt-1 d-none d-sm-block" style="opacity: 0.8; font-size: clamp(0.75rem, 2vw, 1rem);">
                         Indicadores en tiempo real de VITA Clinical
                     </p>
                 </div>
-                <button class="btn btn-clia-refresh shadow-sm" id="btn-refresh-dashboard">
-                    <i class="fa-solid fa-arrows-rotate me-2"></i>Actualizar Tablero
+                <button class="btn btn-clia-refresh shadow-sm btn-sm" id="btn-refresh-dashboard" style="white-space:nowrap;">
+                    <i class="fa-solid fa-arrows-rotate me-md-2"></i><span class="d-none d-md-inline">Actualizar Tablero</span>
                 </button>
             </div>
         </div>
     </div>
 
     <div class="row g-4 mb-4">
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-3 rounded-circle bg-opacity-10 bg-primary" style="color: var(--clia-jacarta);">
-                        <i class="fa-solid fa-users fs-4"></i>
+        <div class="col-6 col-md-6 col-lg-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white h-100 d-flex align-items-center">
+                <div class="d-flex align-items-center gap-3 w-100">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;background: rgba(106,77,212,0.1); color:#6A4DD4;">
+                        <i class="fa-solid fa-users" style="font-size:1rem;"></i>
                     </div>
-                    <div>
-                        <span class="text-muted small d-block">Total Registros</span>
-                        <h3 class="fw-bold m-0" id="kpi-total">0</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-3 rounded-circle text-danger bg-danger bg-opacity-10">
-                        <i class="fa-solid fa-triangle-exclamation fs-4"></i>
-                    </div>
-                    <div>
-                        <span class="text-muted small d-block">Pacientes Críticos</span>
-                        <h3 class="fw-bold m-0 text-danger" id="kpi-criticos">0</h3>
+                    <div class="min-width-0">
+                        <span class="text-muted d-block" style="font-size:0.72rem;">Total Registros</span>
+                        <h3 class="fw-bold m-0" id="kpi-total" style="font-size:1.35rem;">0</h3>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-3 rounded-circle text-info bg-info bg-opacity-10">
-                        <i class="fa-solid fa-cake-candles fs-4"></i>
+        <div class="col-6 col-md-6 col-lg-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white h-100 d-flex align-items-center">
+                <div class="d-flex align-items-center gap-3 w-100">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;background: rgba(229,62,62,0.1); color:#dc2626;">
+                        <i class="fa-solid fa-bolt" style="font-size:1rem;"></i>
                     </div>
-                    <div>
-                        <span class="text-muted small d-block">Edad Promedio</span>
-                        <h3 class="fw-bold m-0" style="color: var(--clia-jacarta);" id="kpi-edad-promedio">0</h3>
+                    <div class="min-width-0">
+                        <span class="text-muted d-block" style="font-size:0.72rem;">Pacientes Críticos</span>
+                        <h3 class="fw-bold m-0 text-danger" id="kpi-criticos" style="font-size:1.35rem;">0</h3>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-3 rounded-circle" style="background-color: var(--clia-wisteria); color: var(--clia-jacarta);">
-                        <i class="fa-solid fa-heart-pulse fs-4"></i>
+        <div class="col-6 col-md-6 col-lg-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white h-100 d-flex align-items-center">
+                <div class="d-flex align-items-center gap-3 w-100">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;background: rgba(0,2,41,0.08); color:#000229;">
+                        <i class="fa-solid fa-calendar" style="font-size:1rem;"></i>
                     </div>
-                    <div>
-                        <span class="text-muted small d-block">Riesgo Poblacional</span>
-                        <h3 class="fw-bold m-0" id="kpi-riesgo">0%</h3>
+                    <div class="min-width-0">
+                        <span class="text-muted d-block" style="font-size:0.72rem;">Edad Promedio</span>
+                        <h3 class="fw-bold m-0" id="kpi-edad-promedio" style="color: var(--clia-jacarta);font-size:1.35rem;">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-6 col-lg-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white h-100 d-flex align-items-center">
+                <div class="d-flex align-items-center gap-3 w-100">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;background: rgba(206,181,212,0.3); color:#6E3377;">
+                        <i class="fa-solid fa-shield-halved" style="font-size:1rem;"></i>
+                    </div>
+                    <div class="min-width-0">
+                        <span class="text-muted d-block" style="font-size:0.72rem;">% Riesgo Poblacional</span>
+                        <h3 class="fw-bold m-0" id="kpi-riesgo" style="font-size:1.35rem;">0%</h3>
                     </div>
                 </div>
             </div>
@@ -82,46 +82,55 @@
     </div>
 
     <div class="row g-4 mb-4">
-        <div class="col-12 col-lg-8">
-            <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
-                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
-                    <i class="fa-solid fa-chart-line me-2 text-primary"></i> Tendencias Clínicas: TA Sistólica y Glucosa
+        <div class="col-12 col-lg-7">
+            <div class="card p-3 p-md-4 border-0 shadow-sm rounded-4 bg-white h-100">
+                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);font-size:clamp(0.85rem,2vw,1.25rem);">
+                    Distribución de Riesgo
                 </h5>
-                <div id="chart-lineas"></div>
+                <div id="chart-donut"></div>
+                <hr class="my-3">
+                <div class="row g-2">
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 rounded text-center" style="background: #f0fdf4;">
+                            <small class="text-muted d-block" style="font-size:0.7rem;">Glucosa prom.</small>
+                            <strong id="ind-glucosa" style="color: var(--clia-jacarta);font-size:0.9rem;">—</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 rounded text-center" style="background: #f8f4ff;">
+                            <small class="text-muted d-block" style="font-size:0.7rem;">IMC prom.</small>
+                            <strong id="ind-imc" style="color: var(--clia-jacarta);font-size:0.9rem;">—</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 rounded text-center" style="background: #fef2f2;">
+                            <small class="text-muted d-block" style="font-size:0.7rem;">% Críticos</small>
+                            <strong id="ind-criticos" style="color: #dc2626;font-size:0.9rem;">—</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 rounded text-center" style="background: #fff7ed;">
+                            <small class="text-muted d-block" style="font-size:0.7rem;">% Riesgo Alto</small>
+                            <strong id="ind-alto" style="color: #ea580c;font-size:0.9rem;">—</strong>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="col-12 col-lg-4">
-            <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
-                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
-                    <i class="fa-solid fa-chart-pie me-2" style="color: var(--clia-wisteria);"></i> Distribución de Riesgo
-                </h5>
-                <div id="chart-radar"></div>
-                <hr class="my-3">
-                <div class="row g-2">
-                    <div class="col-6">
-                        <div class="p-2 rounded" style="background: #f0fdf4;">
-                            <small class="text-muted d-block">Glucosa prom.</small>
-                            <strong id="ind-glucosa" style="color: var(--clia-jacarta);">—</strong>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-2 rounded" style="background: #f8f4ff;">
-                            <small class="text-muted d-block">IMC prom.</small>
-                            <strong id="ind-imc" style="color: var(--clia-jacarta);">—</strong>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-2 rounded" style="background: #fef2f2;">
-                            <small class="text-muted d-block">% Críticos</small>
-                            <strong id="ind-criticos" style="color: #dc2626;">—</strong>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-2 rounded" style="background: #fff7ed;">
-                            <small class="text-muted d-block">% Riesgo Alto</small>
-                            <strong id="ind-alto" style="color: #ea580c;">—</strong>
-                        </div>
+        <div class="col-12 col-lg-5">
+            <div class="card p-3 p-md-4 border-0 shadow-sm rounded-4 bg-white h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="fw-bold m-0" style="color: var(--clia-jacarta);font-size:clamp(0.85rem,2vw,1.25rem);">
+                        Últimas Consultas
+                    </h5>
+                    <a href="/pacientes/" class="small text-decoration-none" style="color: var(--clia-wisteria);">
+                        Ver todos <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div id="ultimas-consultas">
+                    <div class="text-center text-muted py-4">
+                        <small>Cargando...</small>
                     </div>
                 </div>
             </div>
@@ -130,64 +139,29 @@
 
     <div class="row g-4">
         <div class="col-12">
-            <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
-                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
-                    <i class="fa-solid fa-chart-column me-2 text-success"></i> Segmentación Patológica por Rangos de Edad
+            <div class="card p-3 p-md-4 border-0 shadow-sm rounded-4 bg-white">
+                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);font-size:clamp(0.85rem,2vw,1.25rem);">
+                    Pacientes por Rango de Edad
                 </h5>
                 <div id="chart-barras"></div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 mt-2" id="dashboard-ml-section">
-        <div class="col-12 col-md-5">
-            <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
-                <h5 class="fw-bold mb-4" style="color: var(--clia-jacarta);">
-                    <i class="fa-solid fa-brain me-2 text-primary"></i> Rendimiento del Predictor (Scikit-Learn)
-                </h5>
-                <div class="d-flex flex-column gap-3">
-                    <div class="d-flex justify-content-between border-bottom pb-2">
-                        <span class="text-muted">Exactitud (Accuracy)</span>
-                        <strong class="text-success" id="ml-accuracy">0%</strong>
-                    </div>
-                    <div class="d-flex justify-content-between border-bottom pb-2">
-                        <span class="text-muted">Precisión (Precision)</span>
-                        <strong style="color: var(--clia-jacarta);" id="ml-precision">0%</strong>
-                    </div>
-                    <div class="d-flex justify-content-between border-bottom pb-2">
-                        <span class="text-muted">Sensibilidad (Recall)</span>
-                        <strong style="color: var(--clia-jacarta);" id="ml-recall">0%</strong>
-                    </div>
-                    <div class="d-flex justify-content-between pb-2">
-                        <span class="text-muted">Puntaje F1 (F1-Score)</span>
-                        <strong style="color: var(--clia-wisteria);" id="ml-f1">0%</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-7">
-            <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
-                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
-                    <i class="fa-solid fa-border-all me-2 text-warning"></i> Matriz de Confusión (2x2)
-                </h5>
-                <div id="chart-heatmap"></div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.getElementById('nav-dashboard').classList.add('active');
-        const rol = localStorage.getItem('usuario_rol');
-        if (rol === 'MEDICO') {
-            const mlSection = document.getElementById('dashboard-ml-section');
-            if (mlSection) mlSection.remove();
+    <style>
+        #chart-donut, #chart-barras { width: 100%; }
+        #chart-donut { min-height: 260px; }
+        #chart-barras { min-height: 260px; }
+        #ultimas-consultas .min-width-0 { min-width: 0; }
+        @media (max-width: 575.98px) {
+            #chart-donut { min-height: 220px; }
+            #chart-barras { min-height: 220px; }
+            #ultimas-consultas > div { font-size: 0.85rem; }
         }
-    </script>
-
+    </style>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="/static/js/dashboard_render.js?v=5"></script>
+<script src="/static/js/dashboard_render.js?v=8"></script>
 {% endblock %}

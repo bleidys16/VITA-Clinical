@@ -49,7 +49,7 @@ async function cargarHistorialLogs() {
 function mostrarTablaVacia(contenedor) {
     contenedor.innerHTML = `
         <tr>
-            <td colspan="5" class="text-center text-muted py-4" style="font-family: 'Urbanist', sans-serif;">
+            <td colspan="5" class="text-center text-muted py-4" style="font-family: 'Satoshi', sans-serif;">
                 <i class="fa-solid fa-folder-open me-2" style="color: var(--clia-wisteria);"></i> 
                 No se registran ejecuciones previas. El sistema está listo para recibir el primer dataset.
             </td>

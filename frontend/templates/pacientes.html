@@ -17,15 +17,14 @@
     .badge-riesgo.alto { background-color: #ffe5d0; color: #a84c00; }
     .badge-riesgo.critico { background-color: #f8d7da; color: #721c24; }
     .paciente-row { transition: background-color 0.15s ease-in-out; }
-    .table-vitals { font-size: 0.78rem; color: #495057; }
-    .table-vitals i { width: 14px; text-align: center; opacity: 0.6; }
+    .table-vitals { font-size: 0.75rem; color: #495057; line-height: 1.6; }
 </style>
 
 <div class="row mb-4">
     <div class="col-12">
         <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
             <div>
-                <h2 class="fw-bold m-0" style="font-family: 'Epilogue'; color: #fff; font-size: 1.5rem;">
+                <h2 class="fw-bold m-0" style="font-family: 'Satoshi'; color: #fff; font-size: 1.5rem;">
                     Gestión y Segmentación de Pacientes
                 </h2>
                 <p class="m-0 mt-1" style="opacity: 0.8; font-size: 0.95rem;">
@@ -101,17 +100,18 @@
         <table class="table table-hover align-middle mb-0" id="tabla-pacientes" style="font-size: 0.85rem;">
             <thead class="table-light sticky-top">
                 <tr>
-                    <th style="width: 24%;">Paciente</th>
-                    <th style="width: 10%;">Edad/Sexo</th>
-                    <th style="width: 10%;">IMC</th>
-                    <th style="width: 30%;">Signos Vitales</th>
+                    <th style="width: 4%;">#</th>
+                    <th style="width: 22%;">Paciente</th>
+                    <th style="width: 8%;">Edad/Sexo</th>
+                    <th style="width: 7%;">IMC</th>
+                    <th style="width: 33%;">Signos Vitales</th>
                     <th style="width: 18%;" class="text-center">Riesgo</th>
                     <th id="th-acciones" style="width: 8%;" class="text-center d-none"></th>
                 </tr>
             </thead>
             <tbody id="tabla-pacientes-body">
                 <tr id="loading-row">
-                    <td colspan="6" class="text-center py-4 text-muted">
+                    <td colspan="7" class="text-center py-4 text-muted">
                         <i class="fa-solid fa-circle-notch fa-spin me-2"></i> Cargando registros clínicos...
                     </td>
                 </tr>
@@ -130,7 +130,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius: 16px;">
             <div class="modal-header border-0" style="background: var(--clia-indigo-dark); color: #fff; border-radius: 16px 16px 0 0;">
-                <h5 class="modal-title fw-bold" id="modalPacienteLabel"><i class="fa-solid fa-user me-2"></i> Nuevo Paciente</h5>
+                <h5 class="modal-title fw-bold" id="modalPacienteLabel">Nuevo Paciente</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
@@ -233,13 +233,15 @@
 </div>
 
 <script>
-    document.getElementById('nav-pacientes').classList.add('active');
+    document.getElementById('nav-pacientes')?.classList.add('active');
+    document.getElementById('nav-pacientes-off')?.classList.add('active');
 
     let todosLosPacientes = [];
     let pageActual = 1;
     const PAGE_SIZE = 15;
     let esAdmin = false;
     let esMedico = false;
+    let paginacionInicializada = false;
 
     // ── Utilidades ──────────────────────────────────────────
     function imcClass(clasif) {
@@ -280,7 +282,7 @@
                 renderizarPagina();
             } else {
                 document.getElementById('tabla-pacientes-body').innerHTML = `
-                    <tr><td colspan="6" class="text-center text-danger py-4">Error al cargar los datos.</td></tr>
+                    <tr><td colspan="7" class="text-center text-danger py-4">Error al cargar los datos.</td></tr>
                 `;
             }
         } catch (error) {
@@ -291,7 +293,28 @@
         document.getElementById('filter-riesgo').addEventListener('change', aplicarFiltros);
         document.getElementById('filter-imc').addEventListener('change', aplicarFiltros);
         document.getElementById('switch-criticos-estricto').addEventListener('change', aplicarFiltros);
+        inicializarPaginacion();
     });
+
+    function inicializarPaginacion() {
+        if (paginacionInicializada) return;
+        paginacionInicializada = true;
+
+        document.getElementById('footer-paginacion')?.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-page]');
+            if (!btn || btn.disabled) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const pagina = parseInt(btn.dataset.page, 10);
+            if (!isNaN(pagina)) irPagina(pagina);
+        });
+
+        document.getElementById('footer-paginacion')?.addEventListener('keydown', function(e) {
+            if (e.target.id !== 'input-ir-pagina' || e.key !== 'Enter') return;
+            e.preventDefault();
+            irAPaginaInput();
+        });
+    }
 
     function normalizar(texto) {
         return texto.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -327,10 +350,15 @@
 
     function renderizarPaginacion(totalPaginas, totalFiltrados) {
         const info = document.getElementById('contador-info');
-        const inicio = (pageActual - 1) * PAGE_SIZE + 1;
-        const fin = Math.min(pageActual * PAGE_SIZE, totalFiltrados);
-        info.innerHTML = `<i class="fa-solid fa-users me-1"></i> Mostrando ${inicio}&ndash;${fin} de ${totalFiltrados} pacientes` +
-            (totalFiltrados < todosLosPacientes.length ? ` <span class="text-muted">(filtrados de ${todosLosPacientes.length})</span>` : '');
+        if (totalFiltrados === 0) {
+            info.innerHTML = `<i class="fa-solid fa-users me-1"></i> Sin resultados` +
+                (todosLosPacientes.length > 0 ? ` <span class="text-muted">(de ${todosLosPacientes.length} pacientes)</span>` : '');
+        } else {
+            const inicio = (pageActual - 1) * PAGE_SIZE + 1;
+            const fin = Math.min(pageActual * PAGE_SIZE, totalFiltrados);
+            info.innerHTML = `<i class="fa-solid fa-users me-1"></i> Mostrando ${inicio}&ndash;${fin} de ${totalFiltrados} pacientes` +
+                (totalFiltrados < todosLosPacientes.length ? ` <span class="text-muted">(filtrados de ${todosLosPacientes.length})</span>` : '');
+        }
 
         const header = document.getElementById('header-contador');
         header.innerHTML = `<span class="badge rounded-pill bg-secondary"><i class="fa-solid fa-users me-1"></i> ${totalFiltrados} de ${todosLosPacientes.length}</span>`;
@@ -338,46 +366,60 @@
         const controles = document.getElementById('paginacion-controles');
         controles.innerHTML = `
             <div class="btn-group btn-group-sm">
-                <button class="btn btn-outline-secondary" onclick="irPagina(1)" ${pageActual <= 1 ? 'disabled' : ''}><i class="fa-solid fa-angles-left"></i></button>
-                <button class="btn btn-outline-secondary" onclick="irPagina(${pageActual - 1})" ${pageActual <= 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>
-                <span class="btn btn-outline-primary active">${pageActual}</span>
-                <button class="btn btn-outline-secondary" onclick="irPagina(${pageActual + 1})" ${pageActual >= totalPaginas ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>
-                <button class="btn btn-outline-secondary" onclick="irPagina(${totalPaginas})" ${pageActual >= totalPaginas ? 'disabled' : ''}><i class="fa-solid fa-angles-right"></i></button>
+                <button type="button" class="btn btn-outline-secondary" data-page="1" ${pageActual <= 1 ? 'disabled' : ''}><i class="fa-solid fa-angles-left"></i></button>
+                <button type="button" class="btn btn-outline-secondary" data-page="${pageActual - 1}" ${pageActual <= 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>
+                <span class="btn btn-outline-primary active disabled">${pageActual} / ${totalPaginas}</span>
+                <button type="button" class="btn btn-outline-secondary" data-page="${pageActual + 1}" ${pageActual >= totalPaginas ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>
+                <button type="button" class="btn btn-outline-secondary" data-page="${totalPaginas}" ${pageActual >= totalPaginas ? 'disabled' : ''}><i class="fa-solid fa-angles-right"></i></button>
             </div>
             <div class="input-group input-group-sm" style="max-width: 130px;">
                 <input type="number" id="input-ir-pagina" class="form-control" min="1" max="${totalPaginas}" placeholder="Ir a..." style="font-size: 0.8rem;">
-                <button class="btn btn-outline-primary" onclick="irAPaginaInput()">Ir</button>
+                <button type="button" class="btn btn-outline-primary" data-action="ir-pagina">Ir</button>
             </div>
         `;
-        document.getElementById('input-ir-pagina')?.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') irAPaginaInput();
+
+        controles.querySelector('[data-action="ir-pagina"]')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            irAPaginaInput();
         });
     }
 
     function irAPaginaInput() {
         const input = document.getElementById('input-ir-pagina');
-        if (!input) return;
-        const p = parseInt(input.value);
+        if (!input || input.value === '') return;
+        const p = parseInt(input.value, 10);
         const filtrados = obtenerPacientesFiltrados();
         const total = Math.max(1, Math.ceil(filtrados.length / PAGE_SIZE));
         if (p >= 1 && p <= total) { pageActual = p; renderizarPagina(); }
     }
 
-    function irPagina(pagina) { pageActual = pagina; renderizarPagina(); }
+    function irPagina(pagina) {
+        const filtrados = obtenerPacientesFiltrados();
+        const total = Math.max(1, Math.ceil(filtrados.length / PAGE_SIZE));
+        if (pagina < 1 || pagina > total) return;
+        pageActual = pagina;
+        renderizarPagina();
+    }
 
     function renderizarTabla(pacientes, total) {
         const tbody = document.getElementById('tabla-pacientes-body');
+        const cols = esAdmin ? 7 : 6;
         if (pacientes.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">
+            const msg = todosLosPacientes.length === 0
+                ? 'No hay pacientes registrados. Cargá un dataset desde ETL.'
+                : 'No se encontraron registros con los filtros actuales.';
+            tbody.innerHTML = `<tr><td colspan="${cols}" class="text-center py-5 text-muted">
                 <i class="fas fa-folder-open fa-3x mb-3 d-block text-secondary"></i>
-                No se encontraron registros.
+                ${msg}
             </td></tr>`;
             return;
         }
         tbody.innerHTML = '';
-        pacientes.forEach(p => {
+        const inicio = (pageActual - 1) * PAGE_SIZE;
+        pacientes.forEach((p, idx) => {
+            const num = inicio + idx + 1;
             const imcVal = p.imc ? p.imc.toFixed(1) : '—';
-            const imcClase = imcClass(p.clasificacion_imc);
             const riesgoClase = riesgoClass(p.riesgo_enfermedad);
             const riesgoLabel = p.riesgo_enfermedad || '—';
             const diag = p.diagnostico_preliminar || '';
@@ -385,20 +427,21 @@
             const tr = document.createElement('tr');
             tr.className = 'paciente-row';
             tr.innerHTML = `
+                <td class="text-muted" style="font-size:0.78rem;">${num}</td>
                 <td>
-                    <div class="fw-semibold text-dark">${p.nombres} ${p.apellidos}</div>
-                    ${diag ? `<small class="text-muted" style="font-size: 0.75rem;">${diag}</small>` : ''}
+                    <div class="fw-semibold text-dark" style="font-size:0.85rem;">${p.nombres} ${p.apellidos}</div>
+                    ${diag ? `<small class="text-muted" style="font-size: 0.72rem;">${diag}</small>` : ''}
                 </td>
                 <td class="text-muted" style="font-size: 0.83rem;">${p.edad} · ${p.sexo ? p.sexo[0] : '—'}</td>
                 <td>
                     <span class="fw-semibold" style="font-size: 0.85rem;">${imcVal}</span>
                 </td>
                 <td>
-                    <div class="table-vitals d-flex flex-wrap gap-2">
-                        <span><i class="fa-solid fa-heart-pulse text-danger"></i> ${p.presion_sistolica || '—'}/${p.presion_diastolica || '—'}</span>
-                        <span><i class="fa-solid fa-droplet text-danger"></i> ${p.glucosa || '—'}</span>
-                        <span><i class="fa-solid fa-lungs text-info"></i> ${p.saturacion_oxigeno || '—'}%</span>
-                        <span><i class="fa-solid fa-temperature-high text-warning"></i> ${p.temperatura || '—'}°C</span>
+                    <div class="table-vitals" style="font-size:0.75rem;line-height:1.6;">
+                        <span>PA: ${p.presion_sistolica || '—'}/${p.presion_diastolica || '—'} mmHg</span>
+                        <span>GLU: ${p.glucosa || '—'} mg/dL</span>
+                        <span>SpO₂: ${p.saturacion_oxigeno || '—'}%</span>
+                        <span>T°: ${p.temperatura || '—'}°C</span>
                     </div>
                 </td>
                 <td class="text-center">

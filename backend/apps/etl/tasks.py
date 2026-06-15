@@ -1,6 +1,8 @@
+import os
 from celery import shared_task
 from django.core.cache import cache
 from .services import PipelineETL
+from .analytics import calcular_analitica_dataset, recalcular_kpis_desde_db
 from apps.machine_learning.services import MotorPredictivoVITA
 
 TASK_ID_KEY = 'etl_task_id'
@@ -30,6 +32,28 @@ def ejecutar_pipeline_asincrono(self, ruta_archivo, usuario_id=None):
     actualizar_log('LOAD', 'Cargando datos a PostgreSQL...', 'Inserción masiva con transacción atómica')
     exito, filas_cargadas = pipeline.load()
     actualizar_log('LOAD', 'Carga completada', f'{filas_cargadas} registros insertados')
+
+    actualizar_log('ANALYTICS', 'Calculando KPIs del dashboard...', 'Estadísticas descriptivas y pacientes críticos')
+    try:
+        kpi = calcular_analitica_dataset(pipeline.df, reemplazar=True)
+        if not kpi:
+            raise ValueError('El dataset no produjo KPIs')
+        actualizar_log('ANALYTICS', 'KPIs calculados correctamente', f'{kpi.total_registros} registros')
+    except Exception as e:
+        actualizar_log('ANALYTICS', 'Reintentando KPIs desde la base de datos...', str(e))
+        try:
+            kpi = recalcular_kpis_desde_db()
+            if kpi:
+                actualizar_log('ANALYTICS', 'KPIs recalculados desde BD', f'{kpi.total_registros} registros')
+            else:
+                actualizar_log('ANALYTICS', 'No se pudieron calcular KPIs', 'Sin pacientes en la base de datos')
+        except Exception as e2:
+            actualizar_log('ANALYTICS', 'Error definitivo calculando KPIs', str(e2))
+
+    try:
+        os.remove(ruta_archivo)
+    except Exception:
+        pass
 
     actualizar_log('ML', 'Preparando datos para Machine Learning...', 'Normalizando columnas y generando variable objetivo')
 

@@ -7,9 +7,11 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>{% block title %}VITA Clinical{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;600;700;800&family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236A4DD4'/><text x='16' y='23' text-anchor='middle' fill='white' font-size='20' font-weight='bold' font-family='Satoshi,sans-serif'>V</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <style>
@@ -22,13 +24,13 @@
             --clia-indigo-dark: #000229;
         }
         body {
-            font-family: 'Urbanist', sans-serif;
+            font-family: 'Satoshi', sans-serif;
             background-color: var(--clia-bright-gray);
             color: var(--clia-black-coffee);
             margin: 0;
             padding: 0;
         }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Epilogue', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Satoshi', sans-serif; }
         .sidebar-vita {
             background: linear-gradient(135deg,
                 #000229 0%, #000229 15%,
@@ -37,13 +39,8 @@
                 #CEB5D4 78%, #E2ECF5 100%
             );
             background-size: 150% 150%;
-            min-height: 100vh;
-            height: 100vh;
-            position: sticky;
-            top: 0;
-            display: flex;
-            flex-direction: column;
             color: #fff;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
         }
         .nav-link-vita {
             color: rgba(255,255,255,0.7);
@@ -171,109 +168,281 @@
     {% if request.resolver_match.url_name == 'login' %}
         {% block login_content %}{% endblock %}
     {% else %}
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-12 col-md-3 col-lg-2 sidebar-vita p-3">
-                    <div class="d-flex flex-column h-100">
-                        <div>
-                            <div class="d-flex align-items-center gap-2 mb-4 px-2">
-                                <i class="fa-solid fa-heart-pulse fs-3" style="color: var(--clia-wisteria);"></i>
-                                <span class="fw-bold fs-4 m-0" style="font-family: 'Epilogue'; letter-spacing: -0.5px;">VITA</span>
-                            </div>
+        <button class="btn d-md-none position-fixed top-0 start-0 m-2 z-3 shadow-sm rounded-circle"
+                style="width:42px;height:42px;background:#000229;color:#CEB5D4;border:none;"
+                data-bs-toggle="offcanvas" data-bs-target="#sidebar-offcanvas">
+            <i class="fa-solid fa-bars"></i>
+        </button>
 
-                            <ul class="nav flex-column gap-2">
-                                <li class="nav-item">
-                                    <a class="nav-link nav-link-vita" id="nav-dashboard" href="/dashboard/">
-                                        <i class="fa-solid fa-house-medical me-2"></i> Dashboard
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link nav-link-vita" id="nav-pacientes" href="/pacientes/">
-                                        <i class="fa-solid fa-hospital-user me-2"></i> Pacientes
-                                    </a>
-                                </li>
-                                <li class="nav-item d-none" id="menu-analitica">
-                                    <a class="nav-link nav-link-vita" id="nav-analitica" href="/analitica/">
-                                        <i class="fa-solid fa-chart-bar me-2"></i> Analítica
-                                    </a>
-                                </li>
-                                <li class="nav-item d-none" id="menu-ml">
-                                    <a class="nav-link nav-link-vita" id="nav-ml" href="/modelado-ia/">
-                                        <i class="fa-solid fa-brain me-2"></i> Modelado IA
-                                    </a>
-                                </li>
-                                <li class="nav-item d-none" id="menu-cargar-dataset">
-                                    <a class="nav-link nav-link-vita" id="nav-etl" href="/cargar-dataset/">
-                                        <i class="fa-solid fa-cloud-arrow-up me-2"></i> Cargar Dataset
-                                    </a>
-                                </li>
-                                <li class="nav-item d-none" id="menu-usuarios">
-                                    <a class="nav-link nav-link-vita" id="nav-usuarios" href="/usuarios/">
-                                        <i class="fa-solid fa-user-gear me-2"></i> Usuarios
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div class="mt-auto border-top pt-3 border-light border-opacity-25">
-                            <div class="px-2 mb-2 text-truncate" style="font-size: 0.85rem; color: rgba(255,255,255,0.6);" id="sidebar-user-email">
-                                <i class="fa-solid fa-circle-notch fa-spin me-1"></i> Cargando...
-                            </div>
-                            <button class="btn btn-sm btn-outline-light w-100" id="btn-logout">
-                                <i class="fa-solid fa-right-from-bracket me-2"></i> Salir
-                            </button>
-                        </div>
-                    </div>
+        <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="sidebar-offcanvas" style="background: linear-gradient(135deg,#000229 0%,#6A4DD4 50%,#CEB5D4 100%);color:#fff;width:260px;">
+            <div class="offcanvas-header">
+                <div class="d-flex align-items-center gap-2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#CEB5D4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:1.6rem;height:1.6rem;flex-shrink:0;"><circle cx="7" cy="5" r="2"/><circle cx="17" cy="5" r="2"/><path d="M7 7Q12 12 12 17"/><path d="M17 7Q12 12 12 17"/><circle cx="12" cy="20" r="2.8"/></svg>
+                    <span class="fw-bold fs-4" style="font-family: 'Satoshi'; letter-spacing: -0.5px;">VITA</span>
                 </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+            </div>
+            <div class="offcanvas-body d-flex flex-column">
+                <ul class="nav flex-column gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-vita" id="nav-dashboard-off" href="/dashboard/">
+                            <i class="fa-solid fa-house-medical me-2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-vita" id="nav-pacientes-off" href="/pacientes/">
+                            <i class="fa-solid fa-hospital-user me-2"></i> Pacientes
+                        </a>
+                    </li>
+                    <li class="nav-item d-none" id="menu-analitica-off">
+                        <a class="nav-link nav-link-vita" id="nav-analitica-off" href="/analitica/">
+                            <i class="fa-solid fa-chart-bar me-2"></i> Analítica
+                        </a>
+                    </li>
+                    <li class="nav-item d-none" id="menu-ml-off">
+                        <a class="nav-link nav-link-vita" id="nav-ml-off" href="/modelado-ia/">
+                            <i class="fa-solid fa-brain me-2"></i> Modelado IA
+                        </a>
+                    </li>
+                    <li class="nav-item d-none" id="menu-cargar-dataset-off">
+                        <a class="nav-link nav-link-vita" id="nav-etl-off" href="/cargar-dataset/">
+                            <i class="fa-solid fa-cloud-arrow-up me-2"></i> Cargar Dataset
+                        </a>
+                    </li>
+                    <li class="nav-item d-none" id="menu-usuarios-off">
+                        <a class="nav-link nav-link-vita" id="nav-usuarios-off" href="/usuarios/">
+                            <i class="fa-solid fa-user-gear me-2"></i> Usuarios
+                        </a>
+                    </li>
+                </ul>
+                <div class="mt-auto border-top pt-3 border-light border-opacity-25">
+                    <div class="d-flex align-items-center gap-2 mb-2" id="off-user-rol" style="cursor:pointer;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" id="off-avatar" style="width:30px;height:30px;background:#6A4DD4;color:#fff;font-size:0.8rem;">?</div>
+                        <span class="small text-truncate" style="color:rgba(255,255,255,0.7);" id="off-rol-text"></span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-light w-100" id="btn-logout-off">
+                        <i class="fa-solid fa-right-from-bracket"></i> Salir
+                    </button>
+                </div>
+            </div>
+        </div>
 
-                <div class="col-12 col-md-9 col-lg-10 p-4">
-                    {% block content %}{% endblock %}
+        <div class="sidebar-vita d-none d-md-flex flex-column p-3">
+            <div class="flex-shrink-0 mb-4 px-2">
+                <div class="d-flex align-items-center gap-2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--clia-wisteria)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:1.6rem;height:1.6rem;flex-shrink:0;"><circle cx="7" cy="5" r="2"/><circle cx="17" cy="5" r="2"/><path d="M7 7Q12 12 12 17"/><path d="M17 7Q12 12 12 17"/><circle cx="12" cy="20" r="2.8"/></svg>
+                    <span class="fw-bold fs-4" style="font-family: 'Satoshi'; letter-spacing: -0.5px;">VITA</span>
+                </div>
+            </div>
+            <div class="flex-fill" style="overflow-y:auto;min-height:0;">
+                <a class="nav-link-vita d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded mb-1" id="nav-dashboard" href="/dashboard/">
+                    <i class="fa-solid fa-house-medical"></i> Dashboard
+                </a>
+                <a class="nav-link-vita d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded mb-1" id="nav-pacientes" href="/pacientes/">
+                    <i class="fa-solid fa-hospital-user"></i> Pacientes
+                </a>
+                <a class="nav-link-vita d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded mb-1 d-none" id="menu-analitica" href="/analitica/">
+                    <i class="fa-solid fa-chart-bar"></i> Analítica
+                </a>
+                <a class="nav-link-vita d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded mb-1 d-none" id="menu-ml" href="/modelado-ia/">
+                    <i class="fa-solid fa-brain"></i> Modelado IA
+                </a>
+                <a class="nav-link-vita d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded mb-1 d-none" id="menu-cargar-dataset" href="/cargar-dataset/">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Cargar Dataset
+                </a>
+                <a class="nav-link-vita d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded mb-1 d-none" id="menu-usuarios" href="/usuarios/">
+                    <i class="fa-solid fa-user-gear"></i> Usuarios
+                </a>
+            </div>
+            <div class="flex-shrink-0 border-top pt-3 mt-3 border-light border-opacity-25">
+                    <div class="d-flex align-items-center gap-2 px-2 mb-2" id="sidebar-user-rol" style="cursor:pointer;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" id="sidebar-avatar" style="width:30px;height:30px;background:#6A4DD4;color:#fff;font-size:0.8rem;">?</div>
+                        <span class="small text-truncate" style="color:rgba(255,255,255,0.7);" id="sidebar-rol-text"></span>
+                    </div>
+                <button class="btn btn-sm btn-outline-light w-100" id="btn-logout">
+                    <i class="fa-solid fa-right-from-bracket"></i> Salir
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content p-3 p-md-4">
+            {% block content %}{% endblock %}
+        </div>
+
+        <!-- Modal Perfil -->
+        <div class="modal fade" id="modalPerfil" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+                <div class="modal-content border-0 shadow" style="border-radius:16px;">
+                    <div class="modal-header border-0" style="background:#000229;color:#fff;border-radius:16px 16px 0 0;">
+                        <h5 class="modal-title fw-bold">Mi Perfil</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold mx-auto mb-3" id="perfil-avatar" style="width:60px;height:60px;background:#6A4DD4;color:#fff;font-size:1.5rem;">?</div>
+                        <div class="fw-bold mb-1" id="perfil-username-display" style="font-size:1.1rem;">—</div>
+                        <div class="text-muted small mb-3" id="perfil-rol">—</div>
+
+                        <hr>
+                        <h6 class="fw-bold mb-3 text-start">Editar Perfil</h6>
+                        <div id="perfil-msg" class="small d-none mb-2 rounded p-2"></div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label small">Nombre de usuario</label>
+                            <input type="text" class="form-control form-control-sm" id="perfil-username-input">
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label class="form-label small">Correo electrónico</label>
+                            <input type="email" class="form-control form-control-sm" id="perfil-email-input">
+                        </div>
+                        <button class="btn btn-clia-primary w-100 btn-sm mb-3" id="btn-perfil-save">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Cambios
+                        </button>
+
+                        <hr>
+                        <h6 class="fw-bold mb-3 text-start">Cambiar Contraseña</h6>
+                        <div class="mb-3 text-start">
+                            <label class="form-label small">Contraseña actual</label>
+                            <input type="password" class="form-control form-control-sm" id="perfil-current-pw">
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label class="form-label small">Nueva contraseña</label>
+                            <input type="password" class="form-control form-control-sm" id="perfil-new-pw">
+                        </div>
+                        <button class="btn btn-outline-secondary w-100 btn-sm" id="btn-perfil-pw">
+                            <i class="fa-solid fa-key me-1"></i> Actualizar Contraseña
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <script>
-            document.addEventListener("DOMContentLoaded", async function() {
+            let _perfilData = {};
+
+            document.addEventListener("DOMContentLoaded", function() {
                 const token = localStorage.getItem('token_acceso');
                 if (!token) return;
 
-                try {
-                    const response = await fetch('/api/etl/auth/me/', {
-                        method: 'GET',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
+                const rol = localStorage.getItem('usuario_rol');
+                if (rol) aplicarRol(rol);
 
-                    if (response.ok) {
-                        const userData = await response.json();
-
-                        localStorage.setItem('usuario_rol', userData.rol);
-                        document.getElementById('sidebar-user-email').innerHTML = `<i class="fa-solid fa-user me-2" style="color: var(--clia-wisteria);"></i> ${userData.email} <span class="badge bg-light text-dark ms-1">${userData.rol}</span>`;
-
-                        if (userData.rol === 'ADMIN' || userData.rol === 'ANALISTA') {
-                            document.getElementById('menu-cargar-dataset').classList.remove('d-none');
-                            document.getElementById('menu-ml').classList.remove('d-none');
-                        }
-                        if (userData.rol === 'ADMIN' || userData.rol === 'MEDICO') {
-                            document.getElementById('menu-analitica').classList.remove('d-none');
-                        }
-                        if (userData.rol === 'ADMIN') {
-                            document.getElementById('menu-usuarios').classList.remove('d-none');
-                        }
-                    } else {
-                        ejecutarLogout();
-                    }
-                } catch (error) {
-                    console.error("Error validando sesión:", error);
-                }
-
-                document.getElementById('btn-logout').addEventListener('click', ejecutarLogout);
+                cargarPerfil(token);
+                document.getElementById('btn-logout')?.addEventListener('click', ejecutarLogout);
+                document.getElementById('btn-logout-off')?.addEventListener('click', ejecutarLogout);
             });
 
+            function setAvatar(elId, txtId, inicial, nombreRol) {
+                const el = document.getElementById(elId);
+                if (el) el.textContent = inicial;
+                const txt = document.getElementById(txtId);
+                if (txt && nombreRol) txt.textContent = nombreRol;
+            }
+
+            function aplicarRol(rol) {
+                const inicial = rol ? rol.charAt(0) : '?';
+                setAvatar('sidebar-avatar', 'sidebar-rol-text', inicial, rol);
+                setAvatar('off-avatar', 'off-rol-text', inicial, rol);
+
+                (rol === 'ADMIN' || rol === 'ANALISTA') &&
+                    ['menu-cargar-dataset','menu-cargar-dataset-off','menu-ml','menu-ml-off'].forEach(id => document.getElementById(id)?.classList.remove('d-none'));
+                (rol === 'ADMIN' || rol === 'MEDICO') &&
+                    ['menu-analitica','menu-analitica-off'].forEach(id => document.getElementById(id)?.classList.remove('d-none'));
+                rol === 'ADMIN' &&
+                    ['menu-usuarios','menu-usuarios-off'].forEach(id => document.getElementById(id)?.classList.remove('d-none'));
+
+                document.querySelectorAll('.nav-link-vita').forEach(a => {
+                    if (a.getAttribute('href') === location.pathname) a.classList.add('active');
+                });
+            }
+
+            async function cargarPerfil(token) {
+                try {
+                    const res = await fetch('/api/etl/auth/me/', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!res.ok) { ejecutarLogout(); return; }
+                    const d = await res.json();
+                    _perfilData = d;
+                    localStorage.setItem('usuario_rol', d.rol);
+                    aplicarRol(d.rol);
+                    llenarModalPerfil(d);
+                    document.getElementById('sidebar-user-rol')?.addEventListener('click', () => abrirModalPerfil(d));
+                    document.getElementById('off-user-rol')?.addEventListener('click', () => abrirModalPerfil(d));
+                } catch (e) { console.error(e); }
+            }
+
+            function llenarModalPerfil(d) {
+                const av = document.getElementById('perfil-avatar');
+                if (av) av.textContent = (d.rol || '?').charAt(0);
+                document.getElementById('perfil-username-display').textContent = d.username;
+                document.getElementById('perfil-rol').textContent = d.rol;
+                document.getElementById('perfil-username-input').value = d.username;
+                document.getElementById('perfil-email-input').value = d.email;
+            }
+
+            function abrirModalPerfil(d) {
+                llenarModalPerfil(d);
+                document.getElementById('perfil-msg')?.classList.add('d-none');
+                const modalEl = document.getElementById('modalPerfil');
+                if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }
+
             function ejecutarLogout() {
-                localStorage.removeItem('token_acceso');
-                localStorage.removeItem('token_refresco');
-                localStorage.removeItem('usuario_rol');
+                ['token_acceso','token_refresco','usuario_rol'].forEach(k => localStorage.removeItem(k));
                 window.location.href = '/login/';
+            }
+
+            document.getElementById('btn-perfil-save')?.addEventListener('click', async function() {
+                const token = localStorage.getItem('token_acceso');
+                if (!token) return;
+                const uname = document.getElementById('perfil-username-input').value.trim();
+                const email = document.getElementById('perfil-email-input').value.trim();
+                const msg = document.getElementById('perfil-msg');
+                msg.classList.add('d-none');
+                if (!uname || !email) { mostrarMsg(msg, 'Completa ambos campos', 'danger'); return; }
+                try {
+                    const r = await fetch('/api/etl/auth/profile/', {
+                        method: 'PUT',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: uname, email: email })
+                    });
+                    const data = await r.json();
+                    if (r.ok) {
+                        mostrarMsg(msg, 'Perfil actualizado', 'success');
+                        document.getElementById('perfil-username-display').textContent = data.username;
+                        _perfilData.username = data.username;
+                        _perfilData.email = data.email;
+                    } else { mostrarMsg(msg, data.error || 'Error', 'danger'); }
+                } catch (e) { mostrarMsg(msg, 'Error de conexión', 'danger'); }
+            });
+
+            document.getElementById('btn-perfil-pw')?.addEventListener('click', async function() {
+                const token = localStorage.getItem('token_acceso');
+                if (!token) return;
+                const cur = document.getElementById('perfil-current-pw').value;
+                const nw = document.getElementById('perfil-new-pw').value;
+                const msg = document.getElementById('perfil-msg');
+                msg.classList.add('d-none');
+                if (!cur || !nw) { mostrarMsg(msg, 'Completa ambos campos', 'danger'); return; }
+                if (nw.length < 6) { mostrarMsg(msg, 'Mínimo 6 caracteres', 'danger'); return; }
+                try {
+                    const r = await fetch('/api/etl/auth/profile/', {
+                        method: 'PUT',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ current_password: cur, new_password: nw })
+                    });
+                    const data = await r.json();
+                    if (r.ok) {
+                        mostrarMsg(msg, 'Contraseña actualizada', 'success');
+                        document.getElementById('perfil-current-pw').value = '';
+                        document.getElementById('perfil-new-pw').value = '';
+                    } else { mostrarMsg(msg, data.error || 'Error', 'danger'); }
+                } catch (e) { mostrarMsg(msg, 'Error de conexión', 'danger'); }
+            });
+
+            function mostrarMsg(el, txt, tipo) {
+                el.textContent = txt;
+                el.className = `small d-block mb-2 rounded p-2 text-${tipo === 'danger' ? 'white' : 'white'} bg-${tipo}`;
             }
         </script>
     {% endif %}

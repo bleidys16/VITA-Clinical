@@ -88,13 +88,74 @@
         font-size: 2rem;
         color: var(--pred-accent);
     }
+    .pred-vars-card {
+        padding: 0.85rem 1rem;
+        border: 1px solid #e9ecef;
+    }
+    .pred-vars-card .pred-vars-title {
+        font-size: 0.68rem;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+    .pred-vars-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.35rem 0.75rem;
+    }
+    .pred-var-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.3rem 0.45rem;
+        background: #f8f9fb;
+        border-radius: 6px;
+        font-size: 0.72rem;
+    }
+    .pred-var-item .pred-var-label {
+        color: #6c757d;
+        white-space: nowrap;
+    }
+    .pred-var-item .pred-var-value {
+        font-weight: 700;
+        color: var(--clia-text-dark);
+        text-align: right;
+    }
+    .pred-vars-disclaimer {
+        font-size: 0.68rem;
+        padding: 0.45rem 0.6rem;
+        margin-top: auto;
+        border-radius: 6px;
+    }
+    .pred-right-stack {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        gap: 0.75rem;
+    }
+    #card-resultado {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+    }
+    #card-variables:not(.d-none) {
+        flex: 0 0 auto;
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+    }
+    #pred-empty .pred-result-empty {
+        flex: 1;
+        min-height: 160px;
+    }
 </style>
 
 <div class="row mb-4">
     <div class="col-12">
         <div class="p-4 rounded shadow-sm" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
-            <h2 class="fw-bold m-0" style="font-family: 'Epilogue'; color: #fff; font-size: 1.5rem;">
-                <i class="fa-solid fa-microchip me-2"></i> Motor de Predicción Clínica
+            <h2 class="fw-bold m-0" style="font-family: 'Satoshi'; color: #fff; font-size: 1.5rem;">
+                Motor de Predicción Clínica
             </h2>
             <p class="m-0 mt-1" style="opacity: 0.8; font-size: 0.95rem;">
                 Clasificador binario basado en Random Forest — Sano vs Enfermo
@@ -103,13 +164,13 @@
     </div>
 </div>
 
-<div class="row g-4">
+<div class="row g-4 align-items-stretch">
 
     <!-- Columna izquierda: formulario -->
-    <div class="col-12 col-lg-7">
-        <div class="pred-card p-4 h-100">
+    <div class="col-12 col-lg-7 d-flex">
+        <div class="pred-card p-4 w-100">
             <h5 class="fw-bold mb-4" style="color: var(--clia-jacarta);">
-                <i class="fa-solid fa-heart-pulse me-2" style="color: var(--pred-accent);"></i> Variables clínicas
+                Variables clínicas
             </h5>
 
             <div class="row g-4">
@@ -194,7 +255,8 @@
     </div>
 
     <!-- Columna derecha: resultados -->
-    <div class="col-12 col-lg-5 d-flex flex-column gap-4">
+    <div class="col-12 col-lg-5 d-flex">
+        <div class="pred-right-stack">
 
         <!-- Tarjeta: RESULTADO DEL MODELO -->
         <div id="card-resultado" class="pred-card p-4" style="border: 1px solid #dee2e6;">
@@ -237,17 +299,18 @@
         </div>
 
         <!-- Tarjeta: VARIABLES ANALIZADAS -->
-        <div id="card-variables" class="pred-card p-4 d-none" style="border: 1px solid #e9ecef;">
-            <div class="text-muted small fw-semibold mb-3" style="letter-spacing: 0.5px;">VARIABLES ANALIZADAS</div>
-            <div class="row g-0" id="pred-variables-grid"></div>
-            <div class="bg-light p-3 rounded-3 mt-3">
-                <p class="small text-muted mb-0">
+        <div id="card-variables" class="pred-card pred-vars-card d-none">
+            <div class="text-muted fw-semibold pred-vars-title">VARIABLES ANALIZADAS</div>
+            <div id="pred-variables-grid" class="pred-vars-grid"></div>
+            <div class="bg-light pred-vars-disclaimer">
+                <p class="text-muted mb-0">
                     <i class="fa-solid fa-info-circle me-1"></i>
-                    Esta predicción es una estimación generada por un modelo entrenado y no sustituye el criterio clínico profesional.
+                    Estimación del modelo; no sustituye criterio clínico.
                 </p>
             </div>
         </div>
 
+        </div>
     </div>
 </div>
 
@@ -256,7 +319,7 @@
     <div class="col-12 col-lg-5">
         <div class="pred-card p-4 h-100">
             <h5 class="fw-bold mb-4" style="color: var(--clia-jacarta);">
-                <i class="fa-solid fa-brain me-2 text-primary"></i> Rendimiento del Predictor
+                Rendimiento del Predictor
                 <button id="btn-retrain-model" class="btn btn-sm ms-3" style="background: var(--clia-wisteria); color: #fff; border: none; display: none;" onclick="retrainModel()">
                     <i class="fa-solid fa-rotate me-1"></i> Re-entrenar
                 </button>
@@ -272,7 +335,7 @@
     <div class="col-12 col-lg-7">
         <div class="pred-card p-4 h-100">
             <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
-                <i class="fa-solid fa-border-all me-2 text-warning"></i> Matriz de Confusión
+                Matriz de Confusión
             </h5>
             <div id="chart-heatmap">
                 <div class="text-center py-5 text-muted">
@@ -286,8 +349,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-    const navMl = document.getElementById('nav-ml');
+    const navMl = document.getElementById('menu-ml');
     if (navMl) navMl.classList.add('active');
+    document.getElementById('nav-ml-off')?.classList.add('active');
 
     // Sincronizar sliders con labels
     document.querySelectorAll('.form-range').forEach(slider => {
@@ -355,7 +419,7 @@
                     <div class="text-center py-5 text-muted">
                         <i class="fa-solid fa-robot fa-3x mb-3" style="color: var(--clia-wisteria);"></i>
                         <p class="mb-0">Aún no se ha entrenado ningún modelo.</p>
-                        <small>Subí un dataset desde la sección ETL para entrenar el predictor automáticamente.</small>
+                        <small>Sube un dataset desde la sección ETL para entrenar el predictor automáticamente.</small>
                     </div>
                 `;
             }
@@ -379,7 +443,8 @@
 
         document.getElementById('pred-contenido').classList.add('d-none');
         document.getElementById('pred-empty').classList.remove('d-none');
-        document.getElementById('card-variables').classList.add('d-none');
+        const cardVars = document.getElementById('card-variables');
+        cardVars.classList.add('d-none');
         document.getElementById('pred-error').classList.add('d-none');
 
         try {
@@ -407,7 +472,8 @@
 
                 document.getElementById('pred-empty').classList.add('d-none');
                 document.getElementById('pred-contenido').classList.remove('d-none');
-                document.getElementById('card-variables').classList.remove('d-none');
+                const cardVars = document.getElementById('card-variables');
+                cardVars.classList.remove('d-none');
 
                 // Score (basado en 6 criterios clínicos)
                 let score = 0;
@@ -485,34 +551,12 @@
                     { label: 'Fumador', value: fumador === '1' ? 'Sí' : 'No' }
                 ];
                 const grid = document.getElementById('pred-variables-grid');
-                let gridHtml = '';
-                for (let i = 0; i < vars.length; i += 2) {
-                    const v1 = vars[i];
-                    const v2 = vars[i + 1];
-                    const isLast = i + 2 >= vars.length;
-                    if (v2) {
-                        gridHtml += `
-                        <div class="row gx-5 border-bottom border-light py-3">
-                            <div class="col-md-6 d-flex justify-content-between align-items-center">
-                                <span class="text-muted small">${v1.label}</span>
-                                <span class="fw-bold text-dark small">${v1.value}</span>
-                            </div>
-                            <div class="col-md-6 d-flex justify-content-between align-items-center">
-                                <span class="text-muted small">${v2.label}</span>
-                                <span class="fw-bold text-dark small">${v2.value}</span>
-                            </div>
-                        </div>`;
-                    } else {
-                        gridHtml += `
-                        <div class="row gx-5 py-3">
-                            <div class="col-12 d-flex justify-content-between align-items-center">
-                                <span class="text-muted small">${v1.label}</span>
-                                <span class="fw-bold text-dark small">${v1.value}</span>
-                            </div>
-                        </div>`;
-                    }
-                }
-                grid.innerHTML = gridHtml;
+                grid.innerHTML = vars.map(v => `
+                    <div class="pred-var-item">
+                        <span class="pred-var-label">${v.label}</span>
+                        <span class="pred-var-value">${v.value}</span>
+                    </div>
+                `).join('');
             } else {
                 document.getElementById('pred-empty').classList.add('d-none');
                 const errorDiv = document.getElementById('pred-error');

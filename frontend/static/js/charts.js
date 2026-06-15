@@ -35,7 +35,7 @@ async function cargarDatosDashboard() {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom', labels: { font: { family: 'Urbanist', size: 13 } } }
+                    legend: { position: 'bottom', labels: { font: { family: 'Satoshi', size: 13 } } }
                 }
             }
         });
@@ -63,8 +63,8 @@ async function cargarDatosDashboard() {
                     legend: { display: false }
                 },
                 scales: {
-                    x: { grid: { display: false }, ticks: { font: { family: 'Urbanist' } } },
-                    y: { grid: { color: 'rgba(168, 138, 237, 0.1)' }, ticks: { font: { family: 'Urbanist' } } }
+                    x: { grid: { display: false }, ticks: { font: { family: 'Satoshi' } } },
+                    y: { grid: { color: 'rgba(168, 138, 237, 0.1)' }, ticks: { font: { family: 'Satoshi' } } }
                 }
             }
         });
