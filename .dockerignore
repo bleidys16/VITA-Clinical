@@ -1,0 +1,12 @@
+.git
+.env
+venv/
+env/
+**/__pycache__
+**/*.pyc
+backend/temp_uploads/
+backend/staticfiles/
+*.log
+cookies.txt
+desktop.ini
+temp_*.py
