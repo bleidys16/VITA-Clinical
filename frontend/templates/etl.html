@@ -5,7 +5,7 @@
 {% block content %}
 <div class="row mb-4">
     <div class="col-12">
-        <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
+        <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--vita-indigo-dark); color: #FFFFFF;">
             <div>
                 <h2 class="fw-bold m-0" style="font-family: 'Satoshi'; color: #fff; font-size: 1.5rem;">
                     Control ETL
@@ -20,9 +20,9 @@
 
 <div class="row g-4">
     <div class="col-12 col-lg-5">
-        <div class="card clia-card p-4 h-100 d-flex flex-column justify-content-between">
+        <div class="card vita-card p-4 h-100 d-flex flex-column justify-content-between">
             <div>
-                <h5 class="mb-3" style="font-family: 'Satoshi', sans-serif; color: var(--clia-jacarta);">
+                <h5 class="mb-3" style="font-family: 'Satoshi', sans-serif; color: var(--vita-jacarta);">
                     Cargar Dataset Clínico
                 </h5>
                 <p class="small text-muted mb-4" style="line-height: 1.6;">
@@ -30,16 +30,16 @@
                 </p>
 
                 <div id="dropzone" class="p-4 rounded text-center mb-4" 
-                     style="border: 2px dashed var(--clia-wisteria); background-color: #FDFBFA; cursor: pointer; transition: all 0.3s ease;">
+                     style="border: 2px dashed var(--vita-wisteria); background-color: #FDFBFA; cursor: pointer; transition: all 0.3s ease;">
                     <div class="py-3">
-                        <i class="fa-solid fa-cloud-arrow-up mb-3" style="font-size: 2.2rem; color: var(--clia-jacarta);"></i>
-                        <p class="mb-1 small fw-bold" style="color: var(--clia-jacarta);">Arrastra tu archivo CSV o Excel aquí</p>
+                        <i class="fa-solid fa-cloud-arrow-up mb-3" style="font-size: 2.2rem; color: var(--vita-jacarta);"></i>
+                        <p class="mb-1 small fw-bold" style="color: var(--vita-jacarta);">Arrastra tu archivo CSV o Excel aquí</p>
                         <span class="text-muted" style="font-size: 0.75rem;">o haz clic para explorar tus archivos</span>
                     </div>
                     <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display: none;">
                 </div>
 
-                <div id="file-info-container" class="p-2 rounded mb-3 d-none" style="background-color: var(--clia-bright-gray); font-size: 0.85rem;">
+                <div id="file-info-container" class="p-2 rounded mb-3 d-none" style="background-color: var(--vita-bright-gray); font-size: 0.85rem;">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <i class="fa-solid fa-file-csv me-2 text-success"></i>
@@ -52,15 +52,15 @@
 
             <div>
                 <div class="mb-3">
-                    <button id="btn-run-etl" class="btn btn-clia-primary w-100 py-3 shadow-sm btn-lg" style="font-weight: 600;" disabled>
+                    <button id="btn-run-etl" class="btn btn-vita-primary w-100 py-3 shadow-sm btn-lg" style="font-weight: 600;" disabled>
                         <i class="fa-solid fa-play me-2"></i> Iniciar Pipeline ETL
                     </button>
                 </div>
 
                 <div id="etl-loading" class="p-3 rounded mb-3 d-none text-center"
-                    style="background-color: var(--clia-bright-gray);">
-                    <i class="fa-solid fa-gear fa-spin fs-3 mb-2" style="color: var(--clia-jacarta);"></i>
-                    <strong class="d-block" style="color: var(--clia-jacarta);">Procesando...</strong>
+                    style="background-color: var(--vita-bright-gray);">
+                    <i class="fa-solid fa-gear fa-spin fs-3 mb-2" style="color: var(--vita-jacarta);"></i>
+                    <strong class="d-block" style="color: var(--vita-jacarta);">Procesando...</strong>
                     <small class="text-muted">El pipeline ETL+ML está en ejecución.</small>
                 </div>
 
@@ -76,20 +76,20 @@
     </div>
 
     <div class="col-12 col-lg-7">
-        <div class="card clia-card p-4 h-100">
+        <div class="card vita-card p-4 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="m-0" style="font-family: 'Satoshi', sans-serif; color: var(--clia-jacarta);">
+                <h5 class="m-0" style="font-family: 'Satoshi', sans-serif; color: var(--vita-jacarta);">
                     Auditoría e Historial de Cargas
                 </h5>
-                <span class="badge" style="background-color: var(--clia-wisteria); color: var(--clia-jacarta); font-weight: 600;">
+                <span class="badge" style="background-color: var(--vita-wisteria); color: var(--vita-jacarta); font-weight: 600;">
                     Monitoreo Activo
                 </span>
             </div>
 
             <div class="table-responsive" style="max-height: 260px;">
                 <table class="table table-hover align-middle" style="font-family: 'Satoshi', sans-serif;">
-                    <thead style="background-color: var(--clia-bright-gray); position: sticky; top: 0; z-index: 1;">
-                        <tr style="color: var(--clia-jacarta);">
+                    <thead style="background-color: var(--vita-bright-gray); position: sticky; top: 0; z-index: 1;">
+                        <tr style="color: var(--vita-jacarta);">
                             <th>Fecha</th>
                             <th>Registros procesados</th>
                             <th>Tiempo ejec.</th>
@@ -108,7 +108,7 @@
             </div>
 
             <hr class="my-3">
-            <h6 class="fw-bold" style="color: var(--clia-jacarta);">
+            <h6 class="fw-bold" style="color: var(--vita-jacarta);">
                 <i class="fa-solid fa-terminal me-2"></i> Consola de Procesamiento
             </h6>
             <div id="etl-console"
@@ -134,7 +134,7 @@
 
     dropzone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        dropzone.style.backgroundColor = "var(--clia-bright-gray)";
+        dropzone.style.backgroundColor = "var(--vita-bright-gray)";
     });
 
     dropzone.addEventListener('dragleave', () => {

@@ -1,5 +1,7 @@
 version: '3.8'
 
+name: vita-clinical
+
 services:
   db:
     image: postgres:16-alpine

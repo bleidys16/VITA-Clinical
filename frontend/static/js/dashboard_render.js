@@ -54,7 +54,7 @@ function mostrarDashboardVacio() {
     document.getElementById('kpi-riesgo').innerText = '0%';
     document.getElementById('ultimas-consultas').innerHTML = `
         <div class="text-center text-muted py-4">
-            <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 d-block" style="color:var(--clia-wisteria);"></i>
+            <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 d-block" style="color:var(--vita-wisteria);"></i>
             <small>No hay datos en el dashboard.<br>Cargá un dataset desde <a href="/cargar-dataset/">Cargar Dataset</a>.</small>
         </div>`;
     if (chartDonut) { chartDonut.destroy(); chartDonut = null; }

@@ -1,27 +1,27 @@
 :root {
-    --clia-alice-blue: #E2ECF5;
-    --clia-wisteria-blue: #A4A7E3;
-    --clia-majorelle-blue: #6A4DD4;
-    --clia-velvet-orchid: #6E3377;
-    --clia-prussian-blue: #000229;
-    --clia-pink-lavender: #CEB5D4;
-    --clia-surface: #FFFFFF;
-    --clia-text-dark: #000229;
-    --clia-text-muted: #6E3377;
-    --clia-bajo: #48BB78;
-    --clia-medio: #ECC94B;
-    --clia-alto: #ED8936;
-    --clia-critico: #E53E3E;
-    --clia-jacarta: #000229;
-    --clia-wisteria: #CEB5D4;
-    --clia-indigo: #6A4DD4;
-    --clia-indigo-dark: #000229;
-    --clia-pear: #6A4DD4;
+    --vita-alice-blue: #E2ECF5;
+    --vita-wisteria-blue: #A4A7E3;
+    --vita-majorelle-blue: #6A4DD4;
+    --vita-velvet-orchid: #6E3377;
+    --vita-prussian-blue: #000229;
+    --vita-pink-lavender: #CEB5D4;
+    --vita-surface: #FFFFFF;
+    --vita-text-dark: #000229;
+    --vita-text-muted: #6E3377;
+    --vita-bajo: #48BB78;
+    --vita-medio: #ECC94B;
+    --vita-alto: #ED8936;
+    --vita-critico: #E53E3E;
+    --vita-jacarta: #000229;
+    --vita-wisteria: #CEB5D4;
+    --vita-indigo: #6A4DD4;
+    --vita-indigo-dark: #000229;
+    --vita-pear: #6A4DD4;
 }
 
 body {
-    background-color: var(--clia-alice-blue);
-    color: var(--clia-text-dark);
+    background-color: var(--vita-alice-blue);
+    color: var(--vita-text-dark);
     font-family: 'Satoshi', sans-serif;
     font-weight: 400;
     overflow-x: hidden;
@@ -37,29 +37,29 @@ h1, h2, h3, h4, h5, h6 {
     font-family: 'Satoshi', sans-serif;
     font-weight: 800;
     font-size: 2.5rem;
-    color: var(--clia-text-dark);
+    color: var(--vita-text-dark);
 }
 
-.clia-card {
-    background-color: var(--clia-surface);
+.vita-card {
+    background-color: var(--vita-surface);
     border: none;
     border-radius: 16px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     transition: transform 0.2s, box-shadow 0.2s;
 }
-.clia-card:hover {
+.vita-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
 
-.btn-clia-accent {
-    background-color: var(--clia-majorelle-blue);
-    border-color: var(--clia-majorelle-blue);
+.btn-vita-accent {
+    background-color: var(--vita-majorelle-blue);
+    border-color: var(--vita-majorelle-blue);
     color: #fff;
     border-radius: 12px;
     font-weight: 600;
 }
-.btn-clia-accent:hover {
+.btn-vita-accent:hover {
     background-color: #5a3db5;
     border-color: #5a3db5;
     color: #fff;
@@ -68,7 +68,7 @@ h1, h2, h3, h4, h5, h6 {
 .sidebar {
     width: 250px;
     min-height: 100vh;
-    background: var(--clia-indigo-dark);
+    background: var(--vita-indigo-dark);
     color: #fff;
 }
 .sidebar .sidebar-brand { color: #fff; font-size: 1.25rem; }
@@ -80,7 +80,7 @@ h1, h2, h3, h4, h5, h6 {
     transition: all 0.2s;
 }
 .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.15); }
-.sidebar .nav-link.active { color: #fff; background: var(--clia-majorelle-blue); }
+.sidebar .nav-link.active { color: #fff; background: var(--vita-majorelle-blue); }
 
 .chart-container canvas { width: 100% !important; height: 100% !important; }
 

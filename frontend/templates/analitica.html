@@ -5,9 +5,9 @@
 {% block content %}
 <style>
     .metric-row td { vertical-align: middle; }
-    .metric-row td:first-child { font-weight: 600; color: var(--clia-jacarta); white-space: nowrap; }
+    .metric-row td:first-child { font-weight: 600; color: var(--vita-jacarta); white-space: nowrap; }
     .progress-thin { height: 8px; border-radius: 4px; }
-    .table-analitica th { font-size: 0.75rem; text-align: center; white-space: nowrap; background-color: var(--clia-jacarta); color: #fff; }
+    .table-analitica th { font-size: 0.75rem; text-align: center; white-space: nowrap; background-color: var(--vita-jacarta); color: #fff; }
     .table-analitica td { font-size: 0.8rem; text-align: center; }
     .table-analitica td:first-child { text-align: left; }
     .kpi-card { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
@@ -15,12 +15,12 @@
     .alert-card { border-left: 4px solid; }
     .modal-paciente-row:hover { background-color: #f5f0ff; }
     .badge-riesgo { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; }
-    .section-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--clia-jacarta); font-weight: 700; }
+    .section-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--vita-jacarta); font-weight: 700; }
 </style>
 
 <div class="row mb-4">
     <div class="col-12">
-        <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
+        <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--vita-indigo-dark); color: #FFFFFF;">
             <div>
                 <h2 class="fw-bold m-0" style="font-family: 'Satoshi'; color: #fff; font-size: 1.5rem;">
                     Análisis Estadístico Descriptivo
@@ -29,7 +29,7 @@
                     Prevalencia de patologías, alertas clínicas, segmentación y matriz de métricas
                 </p>
             </div>
-            <button class="btn btn-clia-refresh shadow-sm" id="btn-refresh-analitica">
+            <button class="btn btn-vita-refresh shadow-sm" id="btn-refresh-analitica">
                 <i class="fa-solid fa-arrows-rotate me-2"></i> Actualizar
             </button>
         </div>
@@ -37,7 +37,7 @@
 </div>
 
 <div id="analitica-loading" class="text-center py-5">
-    <i class="fa-solid fa-circle-notch fa-spin fa-3x mb-3" style="color: var(--clia-jacarta);"></i>
+    <i class="fa-solid fa-circle-notch fa-spin fa-3x mb-3" style="color: var(--vita-jacarta);"></i>
     <p class="text-muted">Calculando estadísticas con Pandas...</p>
 </div>
 
@@ -47,7 +47,7 @@
     <div class="row g-4 mb-4">
         <div class="col-12">
             <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
-                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+                <h5 class="fw-bold mb-3" style="color: var(--vita-jacarta);">
                     Indicadores de Prevalencia Patológica
                     <small class="text-muted fw-normal ms-2">— clic en cualquier tarjeta para ver los pacientes</small>
                 </h5>
@@ -62,7 +62,7 @@
     <div class="row g-4 mb-4">
         <div class="col-12">
             <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
-                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+                <h5 class="fw-bold mb-3" style="color: var(--vita-jacarta);">
                     Alertas Clínicas
                 </h5>
                 <div class="row g-3" id="alertas-container">
@@ -76,7 +76,7 @@
     <div class="row g-4 mb-4">
         <div class="col-md-6">
             <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
-                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+                <h5 class="fw-bold mb-3" style="color: var(--vita-jacarta);">
                     Segmentación por Nivel de Riesgo
                 </h5>
                 <div id="segmentacion-riesgo-container">
@@ -86,7 +86,7 @@
         </div>
         <div class="col-md-6">
             <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
-                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+                <h5 class="fw-bold mb-3" style="color: var(--vita-jacarta);">
                     Segmentación por Grupo de Edad
                 </h5>
                 <div id="segmentacion-edad-container">
@@ -100,7 +100,7 @@
     <div class="row g-4 mb-4">
         <div class="col-12">
             <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
-                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+                <h5 class="fw-bold mb-3" style="color: var(--vita-jacarta);">
                     Matriz Descriptiva de Variables Biomédicas Continuas
                 </h5>
                 <div class="table-responsive">
@@ -119,7 +119,7 @@
     <div class="row g-4">
         <div class="col-md-6">
             <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
-                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+                <h5 class="fw-bold mb-3" style="color: var(--vita-jacarta);">
                     Distribución del IMC Poblacional
                 </h5>
                 <div id="imc-dist-container">
@@ -129,7 +129,7 @@
         </div>
         <div class="col-md-6">
             <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
-                <h5 class="fw-bold mb-3" style="color: var(--clia-jacarta);">
+                <h5 class="fw-bold mb-3" style="color: var(--vita-jacarta);">
                     Comorbilidades por Sexo
                 </h5>
                 <div id="comorbilidad-container">
@@ -145,11 +145,11 @@
 <div class="modal fade" id="modal-pacientes" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header" style="background: var(--clia-indigo-dark); color: #fff;">
+            <div class="modal-header" style="background: var(--vita-indigo-dark); color: #fff;">
                 <h5 class="modal-title fw-bold" id="modal-pacientes-title">
                     <i class="fa-solid fa-users me-2"></i> <span id="modal-pacientes-label">Pacientes</span>
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">

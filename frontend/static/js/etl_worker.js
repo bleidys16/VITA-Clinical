@@ -26,12 +26,12 @@ async function cargarHistorialLogs() {
         logs.forEach(log => {
             const fechaFormateada = new Date(log.fecha_ejecucion).toLocaleString('es-CO');
             const estadoBadge = log.estado === 'Exitoso' || log.estado === 'Success'
-                ? '<span class="badge" style="background-color: var(--clia-wisteria); color: var(--clia-jacarta); font-weight: 600;">Completado</span>'
+                ? '<span class="badge" style="background-color: var(--vita-wisteria); color: var(--vita-jacarta); font-weight: 600;">Completado</span>'
                 : '<span class="badge bg-danger text-white">Fallido</span>';
 
             tableBody.innerHTML += `
                 <tr>
-                    <td class="fw-bold" style="color: var(--clia-jacarta);">${fechaFormateada}</td>
+                    <td class="fw-bold" style="color: var(--vita-jacarta);">${fechaFormateada}</td>
                     <td><i class="fa-solid fa-circle-check text-success me-1"></i> ${log.registros_procesados || 0}</td>
                     <td class="text-muted">${log.tiempo_ejecucion ? log.tiempo_ejecucion.toFixed(2) + 's' : '—'}</td>
                     <td><small class="text-uppercase font-monospace text-secondary">${log.usuario_responsable || 'Sistema'}</small></td>
@@ -50,7 +50,7 @@ function mostrarTablaVacia(contenedor) {
     contenedor.innerHTML = `
         <tr>
             <td colspan="5" class="text-center text-muted py-4" style="font-family: 'Satoshi', sans-serif;">
-                <i class="fa-solid fa-folder-open me-2" style="color: var(--clia-wisteria);"></i> 
+                <i class="fa-solid fa-folder-open me-2" style="color: var(--vita-wisteria);"></i> 
                 No se registran ejecuciones previas. El sistema está listo para recibir el primer dataset.
             </td>
         </tr>`;

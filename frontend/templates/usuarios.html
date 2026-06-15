@@ -5,7 +5,7 @@
 {% block content %}
 <div class="row mb-4">
     <div class="col-12">
-        <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--clia-indigo-dark); color: #FFFFFF;">
+        <div class="p-4 rounded shadow-sm d-flex align-items-center justify-content-between" style="background-color: var(--vita-indigo-dark); color: #FFFFFF;">
             <div>
                 <h2 class="fw-bold m-0" style="font-family: 'Satoshi'; color: #fff; font-size: 1.5rem;">
                     Gestión de Usuarios
@@ -14,7 +14,7 @@
                     Administración de cuentas y roles del sistema
                 </p>
             </div>
-            <button class="btn btn-clia-primary shadow-sm" onclick="abrirModalCrear()">
+            <button class="btn btn-vita-primary shadow-sm" onclick="abrirModalCrear()">
                 <i class="fa-solid fa-plus me-2"></i> Nuevo Usuario
             </button>
         </div>
@@ -52,7 +52,7 @@
 <div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius: 16px;">
-            <div class="modal-header border-0" style="background: var(--clia-indigo-dark); color: #fff; border-radius: 16px 16px 0 0;">
+            <div class="modal-header border-0" style="background: var(--vita-indigo-dark); color: #fff; border-radius: 16px 16px 0 0;">
                 <h5 class="modal-title fw-bold" id="modalUsuarioLabel"><i class="fa-solid fa-user me-2"></i> Nuevo Usuario</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -87,7 +87,7 @@
             </div>
             <div class="modal-footer border-0">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-clia-primary" id="btn-guardar-usuario" onclick="guardarUsuario()">
+                <button class="btn btn-vita-primary" id="btn-guardar-usuario" onclick="guardarUsuario()">
                     <i class="fa-solid fa-floppy-disk me-1"></i> Guardar
                 </button>
             </div>

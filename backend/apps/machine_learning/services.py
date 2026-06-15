@@ -26,7 +26,7 @@ class PredictorRiesgoService:
         df = pd.DataFrame(pacientes)
         
         # 1. Definir características (X) y variable objetivo (y)
-        # Usamos las métricas clínicas clave recopiladas en CLIA
+        # Usamos las métricas clínicas clave recopiladas en VITA Clinical
         features = [
             'edad', 'peso', 'altura', 'imc', 
             'presion_sistolica', 'presion_diastolica', 
