@@ -2,7 +2,7 @@
 
 {% block title %}Iniciar Sesión | VITA Clinical{% endblock %}
 
-{% block login_content %}
+{% block full_content %}
 <style>
     .login-container {
         min-height: 100vh;
@@ -11,21 +11,13 @@
         justify-content: center;
         background-color: #E2ECF5;
         padding: 0;
+        margin: 0;
     }
     .login-card {
         display: flex;
         width: 100%;
-        max-width: 100%;
         min-height: 100vh;
-        border-radius: 0;
-        overflow: hidden;
-        box-shadow: none;
         background: #fff;
-    }
-    .login-card > .col-md-6 {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
     }
     .login-gradient {
         background: linear-gradient(135deg,
@@ -39,9 +31,9 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: 3rem 2rem;
+        padding: 4rem;
         color: #fff;
-        text-align: center;
+        text-align: left;
         position: relative;
         overflow: hidden;
     }
@@ -58,160 +50,187 @@
         position: relative;
         z-index: 1;
     }
-    .login-gradient .brand-icon {
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.15);
-        backdrop-filter: blur(4px);
+    .login-gradient .brand-logo-large {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(8px);
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2rem;
-        margin-bottom: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
     }
     .login-credentials {
-        margin-top: 2rem;
-        width: 100%;
-    }
-    .login-credentials .credential-item {
-        background: rgba(255,255,255,0.1);
+        margin-top: 3rem;
+        background: rgba(255,255,255,0.05);
         backdrop-filter: blur(4px);
-        border-radius: 10px;
-        padding: 0.6rem 1rem;
-        margin-bottom: 0.5rem;
-        text-align: left;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 20px;
+        padding: 1.5rem;
+        width: 100%;
+        max-width: 400px;
+    }
+    .credential-item {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .credential-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    .credential-item strong {
+        color: var(--vita-wisteria);
         font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
-    .login-credentials .credential-item strong {
-        color: #CEB5D4;
+    .credential-item p {
+        margin: 0;
+        font-size: 0.9rem;
+        opacity: 0.9;
     }
-    .login-form {
-        padding: 3rem;
+
+    .login-form-panel {
+        padding: 4rem;
         display: flex;
         flex-direction: column;
         justify-content: center;
+        background-color: #fff;
     }
-    .login-form .form-control {
-        border-radius: 10px;
+    .login-form-panel .form-header {
+        max-width: 400px;
+        margin-bottom: 2.5rem;
+    }
+    .login-form-panel form {
+        max-width: 400px;
+    }
+    .form-control-vita {
+        background-color: #f8fafc;
         border: 1.5px solid #e2e8f0;
-        padding: 0.75rem 1rem;
-        font-size: 0.9rem;
-        transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .login-form .form-control:focus {
-        border-color: #6A4DD4;
-        box-shadow: 0 0 0 3px rgba(106, 77, 212, 0.15);
-    }
-    .login-form .btn-login {
-        background-color: #CEB5D4;
-        border: none;
-        border-radius: 10px;
-        padding: 0.75rem;
-        font-weight: 700;
-        color: #000229;
-        box-shadow: 0 4px 14px rgba(206, 181, 212, 0.4);
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
         transition: all 0.2s;
     }
-    .login-form .btn-login:hover {
-        background-color: #bca0c7;
-        box-shadow: 0 6px 20px rgba(206, 181, 212, 0.5);
-        transform: translateY(-1px);
+    .form-control-vita:focus {
+        background-color: #fff;
+        border-color: var(--vita-dark-blue-gray);
+        box-shadow: 0 0 0 4px rgba(106, 77, 212, 0.1);
+        outline: none;
     }
-    @media (max-width: 767px) {
-        .login-card { flex-direction: column; max-width: 100%; }
-        .login-card > .col-md-6 { min-height: auto; }
-        .login-gradient { padding: 2rem; }
-        .login-form { padding: 2rem; }
+    .btn-login-submit {
+        background-color: var(--vita-jacarta);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 0.8rem;
+        font-weight: 700;
+        width: 100%;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(0, 2, 41, 0.2);
+    }
+    .btn-login-submit:hover {
+        background-color: #0e0f3d;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(0, 2, 41, 0.3);
+    }
+
+    @media (max-width: 991px) {
+        .login-gradient { display: none; }
+        .login-form-panel { padding: 2rem; width: 100%; align-items: center; }
+        .login-form-panel .form-header, .login-form-panel form { width: 100%; }
     }
 </style>
 
 <div class="login-container">
-    <div class="login-card">
-        <!-- Panel izquierdo: gradiente -->
-        <div class="col-md-6 login-gradient">
-            <div class="brand-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:2rem;height:2rem;"><circle cx="7" cy="5" r="2"/><circle cx="17" cy="5" r="2"/><path d="M7 7Q12 12 12 17"/><path d="M17 7Q12 12 12 17"/><circle cx="12" cy="20" r="2.8"/></svg>
+    <div class="login-card row g-0">
+        <!-- Panel Izquierdo: Branding y Credenciales -->
+        <div class="col-lg-6 login-gradient">
+            <div class="brand-logo-large">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:2.5rem;height:2.5rem;"><circle cx="7" cy="5" r="2"/><circle cx="17" cy="5" r="2"/><path d="M7 7Q12 12 12 17"/><path d="M17 7Q12 12 12 17"/><circle cx="12" cy="20" r="2.8"/></svg>
             </div>
-            <h2 class="fw-bold mb-1" style="font-family: 'Satoshi'; color: #fff;">VITA Clinical</h2>
-            <p style="opacity: 0.85; font-size: 0.9rem; color: #fff;">Plataforma de Analítica Clínica Inteligente</p>
+            <h1 class="display-4 fw-bold mb-3" style="font-family: 'Satoshi';">VITA Clinical</h1>
+            <p class="fs-5 mb-5 opacity-75">Plataforma integral de analítica y predicción clínica inteligente.</p>
 
             <div class="login-credentials">
-                <p style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; color: #fff;">Credenciales de prueba</p>
-
+                <h6 class="text-white mb-4 fw-bold" style="letter-spacing: 1px;">ACCESO DEMOSTRATIVO</h6>
+                
                 <div class="credential-item">
-                    <strong>Administrador</strong><br>
-                    <span style="opacity:0.8;">admin@vita.com / Admin123</span>
+                    <strong>Administrador</strong>
+                    <p>admin@vita.com · Admin123</p>
                 </div>
 
                 <div class="credential-item">
-                    <strong>Analista de Datos</strong><br>
-                    <span style="opacity:0.8;">analista@vita.com / Analista123</span>
+                    <strong>Analista de Datos</strong>
+                    <p>analista@vita.com · Analista123</p>
                 </div>
 
                 <div class="credential-item">
-                    <strong>Médico</strong><br>
-                    <span style="opacity:0.8;">medico@vita.com / Medico123</span>
+                    <strong>Médico Especialista</strong>
+                    <p>medico@vita.com · Medico123</p>
                 </div>
             </div>
         </div>
 
-        <!-- Panel derecho: formulario -->
-        <div class="col-md-6 login-form">
-            <h3 class="fw-bold mb-1" style="color: #000229; font-family: 'Satoshi';">Bienvenido</h3>
-            <p class="text-muted small mb-4">Inicia sesión para acceder al panel clínico.</p>
+        <!-- Panel Derecho: Formulario -->
+        <div class="col-lg-6 login-form-panel">
+            <div class="form-header">
+                <h2 class="fw-bold mb-2" style="color: var(--vita-jacarta);">Iniciar Sesión</h2>
+                <p class="text-muted">Bienvenido de nuevo. Por favor, ingresa tus credenciales para continuar.</p>
+            </div>
 
-            <div id="login-alert" class="alert alert-danger d-none py-2" style="font-size: 0.85rem;">
-                <i class="fa-solid fa-circle-xmark me-2"></i> Credenciales inválidas.
+            <div id="login-alert" class="alert alert-danger d-none mb-4" style="border-radius: 12px; font-size: 0.9rem;">
+                <i class="fa-solid fa-circle-exclamation me-2"></i> Credenciales incorrectas. Verifica tu correo y contraseña.
             </div>
 
             <form id="form-login">
-                <div class="mb-3">
-                    <label for="username" class="form-label small fw-semibold" style="color: #000229;">Correo Electrónico</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0" style="border-radius: 10px 0 0 10px;">
-                            <i class="fa-solid fa-envelope text-muted"></i>
-                        </span>
-                        <input type="text" class="form-control bg-light border-start-0" id="username" required placeholder="ejemplo@vita.com" style="border-radius: 0 10px 10px 0;">
-                    </div>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary">CORREO ELECTRÓNICO</label>
+                    <input type="email" class="form-control-vita w-100" id="username" placeholder="nombre@ejemplo.com" required>
                 </div>
 
-                <div class="mb-4">
-                    <label for="password" class="form-label small fw-semibold" style="color: #000229;">Contraseña</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0" style="border-radius: 10px 0 0 10px;">
-                            <i class="fa-solid fa-lock text-muted"></i>
-                        </span>
-                        <input type="password" class="form-control bg-light border-start-0" id="password" required placeholder="••••••••" style="border-radius: 0 10px 10px 0;">
-                        <button class="input-group-text bg-light border-start-0" type="button" id="toggle-password" style="cursor: pointer; border-radius: 0 10px 10px 0;">
-                            <i class="fa-solid fa-eye text-muted" id="password-icon"></i>
+                <div class="mb-5">
+                    <div class="d-flex justify-content-between">
+                        <label class="form-label small fw-bold text-secondary">CONTRASEÑA</label>
+                    </div>
+                    <div class="position-relative">
+                        <input type="password" class="form-control-vita w-100" id="password" placeholder="••••••••" required>
+                        <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-secondary text-decoration-none pe-3" id="toggle-password">
+                            <i class="fa-solid fa-eye" id="password-icon"></i>
                         </button>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-login w-100 mb-3" id="btn-login-submit">
-                    <i class="fa-solid fa-right-to-bracket me-2"></i> Iniciar Sesión
+                <button type="submit" class="btn-login-submit" id="btn-login-submit">
+                    ENTRAR AL SISTEMA
                 </button>
             </form>
+
+            <div class="mt-5 text-center text-muted small">
+                &copy; 2026 VITA Clinical Systems. Todos los derechos reservados.
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+    // Toggle Password Visibility
     document.getElementById('toggle-password').addEventListener('click', function() {
         const input = document.getElementById('password');
         const icon = document.getElementById('password-icon');
         if (input.type === 'password') {
             input.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
         } else {
             input.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
         }
     });
 
+    // Handle Login
     document.getElementById('form-login').addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -222,7 +241,7 @@
 
         alertBox.classList.add('d-none');
         btnSubmit.disabled = true;
-        btnSubmit.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Autenticando...`;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin me-2"></i> VERIFICANDO...`;
 
         try {
             const response = await fetch('/api/auth/login/', {
@@ -237,6 +256,7 @@
                 localStorage.setItem('token_acceso', data.access);
                 localStorage.setItem('token_refresco', data.refresh);
 
+                // Obtener info del usuario para guardar el rol
                 const meResponse = await fetch('/api/etl/auth/me/', {
                     headers: { 'Authorization': `Bearer ${data.access}` }
                 });
@@ -250,11 +270,11 @@
                 alertBox.classList.remove('d-none');
             }
         } catch (error) {
-            console.error("Error en comunicación con auth server:", error);
+            console.error("Error de red:", error);
             alertBox.classList.remove('d-none');
         } finally {
             btnSubmit.disabled = false;
-            btnSubmit.innerHTML = `<i class="fa-solid fa-right-to-bracket me-2"></i> Iniciar Sesión`;
+            btnSubmit.innerHTML = `ENTRAR AL SISTEMA`;
         }
     });
 </script>

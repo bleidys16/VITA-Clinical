@@ -29,9 +29,21 @@
             color: var(--vita-black-coffee);
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
         }
         h1, h2, h3, h4, h5, h6 { font-family: 'Satoshi', sans-serif; }
+        
+        /* Layout */
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+            width: 100vw;
+        }
+        
+        /* Sidebar */
         .sidebar-vita {
+            width: 260px;
+            min-height: 100vh;
             background: linear-gradient(135deg,
                 #000229 0%, #000229 15%,
                 #1a0a33 22%, #6E3377 35%,
@@ -41,71 +53,57 @@
             background-size: 150% 150%;
             color: #fff;
             box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            flex-shrink: 0;
+            transition: all 0.3s;
+            z-index: 1000;
         }
+        
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            max-height: 100vh;
+            overflow-y: auto;
+            background-color: var(--vita-bright-gray);
+        }
+
         .nav-link-vita {
             color: rgba(255,255,255,0.7);
+            padding: 0.8rem 1rem;
+            margin: 0.2rem 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
             transition: all 0.2s;
-            border-radius: 6px;
+            border-radius: 12px;
+            font-weight: 500;
         }
         .nav-link-vita:hover, .nav-link-vita.active {
             color: #fff;
-            background-color: #6A4DD4;
+            background-color: rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
         }
+        .nav-link-vita.active {
+            background-color: #6A4DD4;
+            box-shadow: 0 4px 12px rgba(106, 77, 212, 0.3);
+        }
+
         .btn-vita-primary {
             background-color: #6A4DD4;
             color: #fff;
             font-weight: 700;
             border: none;
             border-radius: 12px;
+            padding: 0.6rem 1.2rem;
+            transition: all 0.2s;
         }
         .btn-vita-primary:hover {
             background-color: #5a3db5;
             color: #fff;
+            transform: translateY(-1px);
         }
-        .btn-vita-refresh {
-            background-color: var(--vita-wisteria);
-            color: var(--vita-black-coffee);
-            font-weight: 700;
-            border: none;
-            padding: 0.6rem 1.5rem;
-            border-radius: 12px;
-            transition: opacity 0.1s;
-        }
-        .btn-vita-refresh:hover { opacity: 0.9; }
-        .kpi-card-original {
-            background-color: #ffffff;
-            border-radius: 16px;
-            padding: 1.25rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 105px;
-        }
-        .kpi-card-original.critico { border-left: 5px solid #dc3545; }
-        .kpi-card-original.hiper { border-left: 5px solid #ffc107; }
-        .kpi-card-original.diab { border-left: 5px solid #0dcaf0; }
-        .kpi-card-original.fuma { border-left: 5px solid #6c757d; }
-        .kpi-info-box .kpi-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #6C757D;
-            margin-bottom: 0.25rem;
-        }
-        .kpi-info-box .kpi-number {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--vita-black-coffee);
-            line-height: 1;
-        }
-        .kpi-icon-box { font-size: 2rem; opacity: 0.8; }
-        .chart-box-original {
-            background-color: #ffffff;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-        }
+        
+        /* Estilos de tarjetas y otros componentes */
         .vita-card {
             background-color: #ffffff;
             border: none;
@@ -120,22 +118,90 @@
     </style>
     {% block extra_css %}{% endblock %}
 </head>
-...
-        <div class="sidebar-vita d-none d-md-flex flex-column p-3">
-            <div class="flex-shrink-0 mb-4 px-2">
-                <div class="d-flex align-items-center gap-2">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--vita-wisteria)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:1.6rem;height:1.6rem;flex-shrink:0;"><circle cx="7" cy="5" r="2"/><circle cx="17" cy="5" r="2"/><path d="M7 7Q12 12 12 17"/><path d="M17 7Q12 12 12 17"/><circle cx="12" cy="20" r="2.8"/></svg>
+<body>
+    {% block full_content %}
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar-vita d-none d-md-flex flex-column p-4">
+            <div class="brand-section mb-5 px-2">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="brand-logo d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--vita-wisteria)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.5rem;height:1.5rem;"><circle cx="7" cy="5" r="2"/><circle cx="17" cy="5" r="2"/><path d="M7 7Q12 12 12 17"/><path d="M17 7Q12 12 12 17"/><circle cx="12" cy="20" r="2.8"/></svg>
+                    </div>
                     <span class="fw-bold fs-4" style="font-family: 'Satoshi'; letter-spacing: -0.5px;">VITA</span>
                 </div>
             </div>
-...
-                        <div class="mb-3 text-start">
-                            <label class="form-label small">Correo electrónico</label>
-                            <input type="email" class="form-control form-control-sm" id="perfil-email-input">
-                        </div>
-                        <button class="btn btn-vita-primary w-100 btn-sm mb-3" id="btn-perfil-save">
-                            <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Cambios
-                        </button>
 
-                        <hr>
-...
+            <nav class="nav flex-column flex-grow-1">
+                <a href="/dashboard/" class="nav-link-vita" id="nav-dashboard">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </a>
+                <a href="/analitica/" class="nav-link-vita" id="nav-analitica">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i> Analítica
+                </a>
+                <a href="/pacientes/" class="nav-link-vita" id="nav-pacientes">
+                    <i class="fa-solid fa-user-group"></i> Pacientes
+                </a>
+                <a href="/ml-modeling/" class="nav-link-vita" id="nav-ml">
+                    <i class="fa-solid fa-brain"></i> Predicción IA
+                </a>
+                <a href="/etl/" class="nav-link-vita" id="nav-etl">
+                    <i class="fa-solid fa-database"></i> Control ETL
+                </a>
+                <a href="/usuarios/" class="nav-link-vita" id="nav-usuarios">
+                    <i class="fa-solid fa-users-gear"></i> Usuarios
+                </a>
+            </nav>
+
+            <div class="mt-auto pt-4 border-top border-white border-opacity-10">
+                <div class="d-flex align-items-center gap-3 px-2 mb-4">
+                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; color: var(--vita-indigo-dark);">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <div class="fw-bold small text-truncate" id="user-display-name">Usuario</div>
+                        <div class="text-white-50" style="font-size: 0.7rem;" id="user-display-role">Cargando...</div>
+                    </div>
+                </div>
+                <button class="btn btn-link nav-link-vita w-100 text-start border-0 bg-transparent" onclick="logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% endblock %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function logout() {
+            localStorage.removeItem('token_acceso');
+            localStorage.removeItem('token_refresco');
+            localStorage.removeItem('usuario_rol');
+            window.location.href = '/login/';
+        }
+
+        // Cargar info de usuario si existe el token
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token_acceso');
+            if (token) {
+                try {
+                    const response = await fetch('/api/etl/auth/me/', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        document.getElementById('user-display-name').textContent = data.username;
+                        document.getElementById('user-display-role').textContent = data.rol;
+                    }
+                } catch (e) { console.error(e); }
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
