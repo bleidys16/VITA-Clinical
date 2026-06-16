@@ -31,7 +31,7 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: 4rem;
+        padding: 2.5rem;
         color: #fff;
         text-align: left;
         position: relative;
@@ -53,17 +53,17 @@
     .login-gradient .brand-logo-large {
         background: rgba(255,255,255,0.1);
         backdrop-filter: blur(8px);
-        width: 80px;
-        height: 80px;
-        border-radius: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
         box-shadow: 0 8px 32px rgba(0,0,0,0.2);
     }
     .login-credentials {
-        margin-top: 3rem;
+        margin-top: 2rem;
         background: rgba(255,255,255,0.05);
         backdrop-filter: blur(4px);
         border: 1px solid rgba(255,255,255,0.1);
@@ -95,7 +95,7 @@
     }
 
     .login-form-panel {
-        padding: 4rem;
+        padding: 2.5rem;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -150,13 +150,13 @@
         <!-- Panel Izquierdo: Branding y Credenciales -->
         <div class="col-lg-6 login-gradient">
             <div class="brand-logo-large">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:2.5rem;height:2.5rem;"><circle cx="7" cy="5" r="2"/><circle cx="17" cy="5" r="2"/><path d="M7 7Q12 12 12 17"/><path d="M17 7Q12 12 12 17"/><circle cx="12" cy="20" r="2.8"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.8rem;height:1.8rem;"><circle cx="7" cy="5" r="2"/><circle cx="17" cy="5" r="2"/><path d="M7 7Q12 12 12 17"/><path d="M17 7Q12 12 12 17"/><circle cx="12" cy="20" r="2.8"/></svg>
             </div>
-            <h1 class="display-4 fw-bold mb-3" style="font-family: 'Satoshi';">VITA Clinical</h1>
-            <p class="fs-5 mb-5 opacity-75">Plataforma integral de analítica y predicción clínica inteligente.</p>
+            <h1 class="display-6 fw-bold mb-2" style="font-family: 'Satoshi';">VITA Clinical</h1>
+            <p class="fs-6 mb-4 opacity-75">Plataforma integral de analítica y predicción clínica inteligente.</p>
 
             <div class="login-credentials">
-                <h6 class="text-white mb-4 fw-bold" style="letter-spacing: 1px;">ACCESO DEMOSTRATIVO</h6>
+                <h6 class="text-white mb-3 fw-bold" style="letter-spacing: 1px; font-size: 0.8rem;">ACCESO DEMOSTRATIVO</h6>
                 
                 <div class="credential-item">
                     <strong>Administrador</strong>
@@ -178,39 +178,39 @@
         <!-- Panel Derecho: Formulario -->
         <div class="col-lg-6 login-form-panel">
             <div class="form-header">
-                <h2 class="fw-bold mb-2" style="color: var(--vita-jacarta);">Iniciar Sesión</h2>
-                <p class="text-muted">Bienvenido de nuevo. Por favor, ingresa tus credenciales para continuar.</p>
+                <h3 class="fw-bold mb-1" style="color: var(--vita-jacarta);">Iniciar Sesión</h3>
+                <p class="text-muted small">Bienvenido de nuevo. Por favor, ingresa tus credenciales.</p>
             </div>
 
-            <div id="login-alert" class="alert alert-danger d-none mb-4" style="border-radius: 12px; font-size: 0.9rem;">
-                <i class="fa-solid fa-circle-exclamation me-2"></i> Credenciales incorrectas. Verifica tu correo y contraseña.
+            <div id="login-alert" class="alert alert-danger d-none mb-4" style="border-radius: 12px; font-size: 0.85rem;">
+                <i class="fa-solid fa-circle-exclamation me-2"></i> Credenciales incorrectas.
             </div>
 
             <form id="form-login">
-                <div class="mb-4">
+                <div class="mb-3">
                     <label class="form-label small fw-bold text-secondary">CORREO ELECTRÓNICO</label>
-                    <input type="email" class="form-control-vita w-100" id="username" placeholder="nombre@ejemplo.com" required>
+                    <input type="email" class="form-control-vita w-100" id="username" placeholder="nombre@ejemplo.com" required style="padding: 0.6rem 0.8rem; font-size: 0.85rem;">
                 </div>
 
-                <div class="mb-5">
+                <div class="mb-4">
                     <div class="d-flex justify-content-between">
                         <label class="form-label small fw-bold text-secondary">CONTRASEÑA</label>
                     </div>
                     <div class="position-relative">
-                        <input type="password" class="form-control-vita w-100" id="password" placeholder="••••••••" required>
+                        <input type="password" class="form-control-vita w-100" id="password" placeholder="••••••••" required style="padding: 0.6rem 0.8rem; font-size: 0.85rem;">
                         <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-secondary text-decoration-none pe-3" id="toggle-password">
                             <i class="fa-solid fa-eye" id="password-icon"></i>
                         </button>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-login-submit" id="btn-login-submit">
+                <button type="submit" class="btn-login-submit" id="btn-login-submit" style="padding: 0.7rem;">
                     ENTRAR AL SISTEMA
                 </button>
             </form>
 
-            <div class="mt-5 text-center text-muted small">
-                &copy; 2026 VITA Clinical Systems. Todos los derechos reservados.
+            <div class="mt-4 text-center text-muted small" style="font-size: 0.75rem;">
+                &copy; 2026 VITA Clinical Systems.
             </div>
         </div>
     </div>
