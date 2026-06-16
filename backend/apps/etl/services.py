@@ -6,6 +6,7 @@ from datetime import datetime
 from django.db import models, transaction
 from django.contrib.auth.models import User
 from .models import Paciente, HistorialETL, DashboardKPIs
+from .clasificador_sexo import clasificar_sexo_por_nombre
 
 class PipelineETL:
     def __init__(self, file_path, usuario_id=None):
@@ -60,6 +61,15 @@ class PipelineETL:
             self.df['sexo'] = self.df['sexo'].astype(str).str.strip().str.upper()
             mapeo_sexo = {'M': 'Masculino', 'F': 'Femenino', 'MASCULINO': 'Masculino', 'FEMENINO': 'Femenino'}
             self.df['sexo'] = self.df['sexo'].map(mapeo_sexo).fillna('No Definido')
+
+        # 3b. Corrección de sexo basada en el nombre del paciente
+        if 'nombres' in self.df.columns:
+            for idx in self.df.index:
+                nombre = self.df.at[idx, 'nombres']
+                sexo_actual = self.df.at[idx, 'sexo']
+                sexo_correcto = clasificar_sexo_por_nombre(nombre)
+                if sexo_correcto and sexo_correcto != sexo_actual:
+                    self.df.at[idx, 'sexo'] = sexo_correcto
 
         # 4. Corrección de Inconsistencias de Tipo (Edad)
         if 'edad' in self.df.columns:
