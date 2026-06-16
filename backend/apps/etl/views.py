@@ -461,17 +461,26 @@ class ReportesView(APIView):
 
         df = pd.DataFrame(data)
 
-        if formato in ('xlsx', 'csv', 'excel'):
+        if formato in ('xlsx', 'excel'):
             output = io.BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 df.to_excel(writer, sheet_name='Pacientes', index=False)
             output.seek(0)
-            ext = 'xlsx'
             response = HttpResponse(
                 output.read(),
                 content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
-            response['Content-Disposition'] = f'attachment; filename="reporte_vita_{datetime.now().strftime("%Y%m%d_%H%M%S")}.{ext}"'
+            response['Content-Disposition'] = f'attachment; filename="reporte_vita_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+            return response
+        elif formato == 'csv':
+            output = io.StringIO()
+            df.to_csv(output, index=False, encoding='utf-8-sig')
+            output.seek(0)
+            response = HttpResponse(
+                output.read(),
+                content_type='text/csv; charset=utf-8-sig'
+            )
+            response['Content-Disposition'] = f'attachment; filename="reporte_vita_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
             return response
         elif formato == 'pdf':
             try:
