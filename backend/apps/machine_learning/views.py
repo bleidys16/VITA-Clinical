@@ -101,8 +101,9 @@ class PrediccionRiesgoView(APIView):
             presion_sistolica = float(request.data['presion_sistolica'])
             frecuencia_cardiaca = float(request.data['frecuencia_cardiaca'])
             fumador = 1 if request.data.get('fumador', '').lower() in ('true', '1', 'si', 'sí') else 0
-        except (ValueError, TypeError):
-            return Response({"error": "Valores inválidos. Verificá los datos ingresados."}, status=status.HTTP_400_BAD_REQUEST)
+        except (ValueError, TypeError) as e:
+            campo_error = str(e).split("'")[1] if "'" in str(e) else "desconocido"
+            return Response({"error": f"Valor inválido en '{campo_error}'. Verificá los datos ingresados."}, status=status.HTTP_400_BAD_REQUEST)
 
         entrada = np.array([[edad, imc, glucosa, colesterol, presion_sistolica, frecuencia_cardiaca, fumador]])
         entrada_scaled = scaler.transform(entrada)

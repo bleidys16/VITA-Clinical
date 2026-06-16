@@ -429,6 +429,22 @@
     }
 
     async function predecirRiesgo(token) {
+        const campos = [
+            { id: 'pred-edad', nombre: 'Edad' },
+            { id: 'pred-imc', nombre: 'IMC' },
+            { id: 'pred-glucosa', nombre: 'Glucosa' },
+            { id: 'pred-colesterol', nombre: 'Colesterol' },
+            { id: 'pred-sistolica', nombre: 'Presión Sistólica' },
+            { id: 'pred-fc', nombre: 'Frecuencia Cardíaca' }
+        ];
+        for (const campo of campos) {
+            const el = document.getElementById(campo.id);
+            if (!el.value || el.value.trim() === '') {
+                document.getElementById('pred-error').textContent = `Campo requerido: ${campo.nombre}`;
+                document.getElementById('pred-error').classList.remove('d-none');
+                return;
+            }
+        }
         const edad = document.getElementById('pred-edad').value;
         const imc = document.getElementById('pred-imc').value;
         const glucosa = document.getElementById('pred-glucosa').value;
