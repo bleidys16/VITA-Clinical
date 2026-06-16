@@ -56,6 +56,19 @@ class HistorialETL(models.Model):
     def __str__(self):
         return f"Ejecución ETL {self.id} - {self.estado} ({self.fecha})"
 
+class ETLTask(models.Model):
+    task_id = models.CharField(max_length=64, unique=True)
+    activo = models.BooleanField(default=True)
+    fase = models.CharField(max_length=32, default='')
+    mensaje = models.TextField(default='', blank=True)
+    detalle = models.TextField(default='', blank=True)
+    logs = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
 class Perfil(models.Model):
     # Opciones de roles obligatorios de la guía
     ROLE_CHOICES = [

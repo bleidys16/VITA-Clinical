@@ -1,27 +1,44 @@
 import os
 import uuid
-from django.core.cache import cache
 from .services import PipelineETL
 from .analytics import calcular_analitica_dataset, recalcular_kpis_desde_db
 from apps.machine_learning.services import MotorPredictivoVITA
+from .models import ETLTask
 
 TASK_ID_KEY = 'etl_task_id'
 
+def _save_task(task_id, activo=True, fase='', mensaje='', detalle='', logs=None):
+    ETLTask.objects.update_or_create(
+        task_id=task_id,
+        defaults={
+            'activo': activo,
+            'fase': fase,
+            'mensaje': mensaje,
+            'detalle': detalle,
+            'logs': logs or [],
+        }
+    )
+
 def ejecutar_pipeline(ruta_archivo, usuario_id=None):
     task_id = uuid.uuid4().hex
-    cache.set(TASK_ID_KEY, task_id, timeout=3600)
 
     def actualizar_log(fase, mensaje, detalle=''):
-        data = {'fase': fase, 'mensaje': mensaje, 'detalle': detalle}
-        cache.set(f'etl_status_{task_id}', data, timeout=3600)
-        log_history = cache.get(f'etl_logs_{task_id}', [])
+        log_history = []
+        try:
+            existing = ETLTask.objects.filter(task_id=task_id).first()
+            if existing:
+                log_history = list(existing.logs)
+        except Exception:
+            pass
         log_history.append({'fase': fase, 'mensaje': mensaje, 'detalle': detalle})
-        cache.set(f'etl_logs_{task_id}', log_history, timeout=3600)
+        _save_task(task_id, activo=True, fase=fase, mensaje=mensaje, detalle=detalle, logs=log_history)
+
+    _save_task(task_id, activo=True, fase='INIT', mensaje='Iniciando pipeline...', detalle='')
 
     actualizar_log('EXTRACT', 'Extrayendo datos del archivo...', 'Leyendo CSV/Excel con Pandas')
     pipeline = PipelineETL(file_path=ruta_archivo, usuario_id=usuario_id)
     filas_extraidas = pipeline.extract()
-    actualizar_log('EXTRACT', f'Extracción completada', f'{filas_extraidas} registros leídos')
+    actualizar_log('EXTRACT', 'Extracción completada', f'{filas_extraidas} registros leídos')
 
     actualizar_log('TRANSFORM', 'Transformando datos...', 'Limpieza, normalización y cálculo de IMC')
     pipeline.transform()
@@ -82,6 +99,7 @@ def ejecutar_pipeline(ruta_archivo, usuario_id=None):
         actualizar_log('ML', 'Error en entrenamiento ML', str(e))
 
     actualizar_log('DONE', 'Pipeline ETL+ML finalizado', 'Proceso completo')
+    _save_task(task_id, activo=False, fase='DONE', mensaje='Pipeline ETL+ML finalizado', detalle='Proceso completo')
 
     return {
         "status": "success",

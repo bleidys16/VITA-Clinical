@@ -165,18 +165,10 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',), # En el frontend se enviará como: Authorization: Bearer <token>
 }
 
-# Cache en memoria local (no requiere Redis ni Celery worker)
-# Para entornos con Redis, cambiar a: django.core.cache.backends.redis.RedisCache
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'vita-etl-cache',
     }
 }
-
-# Celery configurado para tareas síncronas cuando no hay Redis
-CELERY_TASK_ALWAYS_EAGER = True
-CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='')
-CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default='')
 
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])

@@ -12,15 +12,14 @@ from django.views import View
 from django.http import JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.core.cache import cache
 from django.db.models import Q, Avg
 from django.db import models
 from django.contrib.auth.models import User
 from .services import PipelineETL
-from .models import Paciente, HistorialETL, DashboardKPIs, Perfil
+from .models import Paciente, HistorialETL, DashboardKPIs, Perfil, ETLTask
 from .analytics import calcular_analitica_dataset, recalcular_kpis_desde_db
 import threading
-from .tasks import ejecutar_pipeline as tarea_ejecutar_pipeline, TASK_ID_KEY
+from .tasks import ejecutar_pipeline as tarea_ejecutar_pipeline
 
 
 
@@ -405,22 +404,18 @@ class ETLEstadoView(APIView):
     permission_classes = [IsAuthenticated, EsAdminOAnalista]
 
     def get(self, request, format=None):
-        task_id = cache.get(TASK_ID_KEY)
-        if not task_id:
+        task = ETLTask.objects.filter(activo=True).order_by('-created_at').first()
+        if not task:
+            task = ETLTask.objects.order_by('-created_at').first()
+        if not task:
             return Response({"activo": False, "logs": []}, status=status.HTTP_200_OK)
-
-        data = cache.get(f'etl_status_{task_id}')
-        if not data:
-            return Response({"activo": False, "logs": []}, status=status.HTTP_200_OK)
-
-        log_history = cache.get(f'etl_logs_{task_id}', [])
 
         return Response({
-            "activo": data['fase'] != 'DONE',
-            "fase": data['fase'],
-            "mensaje": data['mensaje'],
-            "detalle": data['detalle'],
-            "logs": log_history,
+            "activo": task.activo,
+            "fase": task.fase,
+            "mensaje": task.mensaje,
+            "detalle": task.detalle,
+            "logs": task.logs,
         }, status=status.HTTP_200_OK)
 
 
