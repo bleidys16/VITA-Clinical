@@ -165,20 +165,18 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',), # En el frontend se enviará como: Authorization: Bearer <token>
 }
 
-# Configuración de Celery con Redis como Broker local
-CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='redis://127.0.0.1:6379/0')
-CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default='redis://127.0.0.1:6379/0')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
-
-# Configuración de Caché con Redis (compartido entre Django y Celery para logs ETL en vivo)
+# Cache en memoria local (no requiere Redis ni Celery worker)
+# Para entornos con Redis, cambiar a: django.core.cache.backends.redis.RedisCache
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': env('CACHE_URL', default='redis://127.0.0.1:6379/1'),
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'vita-etl-cache',
     }
 }
+
+# Celery configurado para tareas síncronas cuando no hay Redis
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='')
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default='')
 
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])

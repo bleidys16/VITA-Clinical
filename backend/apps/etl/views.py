@@ -19,7 +19,8 @@ from django.contrib.auth.models import User
 from .services import PipelineETL
 from .models import Paciente, HistorialETL, DashboardKPIs, Perfil
 from .analytics import calcular_analitica_dataset, recalcular_kpis_desde_db
-from .tasks import ejecutar_pipeline_asincrono, TASK_ID_KEY
+import threading
+from .tasks import ejecutar_pipeline as tarea_ejecutar_pipeline, TASK_ID_KEY
 
 
 
@@ -86,7 +87,13 @@ class RunETLView(APIView):
 
             usuario_id = request.user.id if request.user.is_authenticated else None
 
-            ejecutar_pipeline_asincrono.delay(ruta_guardado, usuario_id=usuario_id)
+            thread = threading.Thread(
+                target=tarea_ejecutar_pipeline,
+                args=(ruta_guardado,),
+                kwargs={'usuario_id': usuario_id},
+                daemon=True
+            )
+            thread.start()
 
             return Response({
                 "status": "accepted",

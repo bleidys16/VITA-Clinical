@@ -1,5 +1,5 @@
 import os
-from celery import shared_task
+import uuid
 from django.core.cache import cache
 from .services import PipelineETL
 from .analytics import calcular_analitica_dataset, recalcular_kpis_desde_db
@@ -7,15 +7,13 @@ from apps.machine_learning.services import MotorPredictivoVITA
 
 TASK_ID_KEY = 'etl_task_id'
 
-@shared_task(bind=True)
-def ejecutar_pipeline_asincrono(self, ruta_archivo, usuario_id=None):
-    task_id = self.request.id
+def ejecutar_pipeline(ruta_archivo, usuario_id=None):
+    task_id = uuid.uuid4().hex
     cache.set(TASK_ID_KEY, task_id, timeout=3600)
 
     def actualizar_log(fase, mensaje, detalle=''):
         data = {'fase': fase, 'mensaje': mensaje, 'detalle': detalle}
         cache.set(f'etl_status_{task_id}', data, timeout=3600)
-        # Accumulate full log history
         log_history = cache.get(f'etl_logs_{task_id}', [])
         log_history.append({'fase': fase, 'mensaje': mensaje, 'detalle': detalle})
         cache.set(f'etl_logs_{task_id}', log_history, timeout=3600)
