@@ -101,7 +101,7 @@ class RunETLView(APIView):
 
 
 class PacienteListView(APIView):
-    permission_classes = [IsAuthenticated, EsAdminOMedico]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
         page = int(request.query_params.get('page', 1))
@@ -205,12 +205,15 @@ class AuthMeView(APIView):
 
     def get(self, request):
         user = request.user
-        rol = user.perfil.rol if hasattr(user, 'perfil') else None
+        perfil = getattr(user, 'perfil', None)
+        rol = perfil.rol if perfil else None
+        rol_display = dict(Perfil.ROLE_CHOICES).get(rol, rol) if perfil else None
         return Response({
             "id": user.id,
             "username": user.username,
             "email": user.email,
             "rol": rol,
+            "rol_display": rol_display,
         })
 
 class ProfileUpdateView(APIView):
@@ -218,12 +221,15 @@ class ProfileUpdateView(APIView):
 
     def get(self, request):
         user = request.user
-        rol = user.perfil.rol if hasattr(user, 'perfil') else None
+        perfil = getattr(user, 'perfil', None)
+        rol = perfil.rol if perfil else None
+        rol_display = dict(Perfil.ROLE_CHOICES).get(rol, rol) if perfil else None
         return Response({
             "id": user.id,
             "username": user.username,
             "email": user.email,
             "rol": rol,
+            "rol_display": rol_display,
         })
 
     def put(self, request):
@@ -262,7 +268,7 @@ class ProfileUpdateView(APIView):
         })
 
 class DashboardDataView(APIView):
-    permission_classes = [IsAuthenticated, EsAdminOMedico]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
         ultimo_kpi = DashboardKPIs.objects.order_by('-fecha_calculo').first()

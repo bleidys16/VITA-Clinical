@@ -32,7 +32,7 @@ class DashboardKPIsView(APIView):
 
 
 class DescriptiveAnalyticsView(APIView):
-    permission_classes = [IsAuthenticated, EsAdminOMedico]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
         try:
@@ -196,7 +196,7 @@ class DescriptiveAnalyticsView(APIView):
 
 
 class PacientesPorCriterioView(APIView):
-    permission_classes = [IsAuthenticated, EsAdminOMedico]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
         criterio = request.query_params.get('criterio', '')

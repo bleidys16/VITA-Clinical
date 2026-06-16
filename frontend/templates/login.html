@@ -1,281 +1,585 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | VITA Clinical</title>
+    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236A4DD4'/><text x='16' y='23' text-anchor='middle' fill='white' font-size='20' font-weight='bold' font-family='Satoshi,sans-serif'>V</text></svg>">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-{% block title %}Iniciar Sesión | VITA Clinical{% endblock %}
+        :root {
+            --vita-jacarta: #000229;
+            --vita-dark-blue-gray: #6A4DD4;
+            --vita-wisteria: #CEB5D4;
+            --vita-bright-gray: #E2ECF5;
+            --vita-black-coffee: #000229;
+            --vita-accent-purple: #6A4DD4;
+            --vita-accent-teal: #3B82F6;
+            --vita-accent-green: #10B981;
+        }
 
-{% block full_content %}
-<style>
-    .login-container {
-        min-height: 100vh;
-        display: flex;
-        align-items: stretch;
-        justify-content: center;
-        background-color: #E2ECF5;
-        padding: 0;
-        margin: 0;
-    }
-    .login-card {
-        display: flex;
-        width: 100%;
-        min-height: 100vh;
-        background: #fff;
-    }
-    .login-gradient {
-        background: linear-gradient(135deg,
-            #000229 0%, #000229 15%,
-            #1a0a33 22%, #6E3377 35%,
-            #6A4DD4 50%, #8a6ddd 62%,
-            #CEB5D4 78%, #E2ECF5 100%
-        );
-        background-size: 150% 150%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 2.5rem;
-        color: #fff;
-        text-align: left;
-        position: relative;
-        overflow: hidden;
-    }
-    .login-gradient::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background:
-            radial-gradient(ellipse at 25% 50%, rgba(0, 2, 41, 0.3) 0%, transparent 50%),
-            radial-gradient(ellipse at 60% 30%, rgba(206, 181, 212, 0.15) 0%, transparent 45%),
-            radial-gradient(ellipse at 45% 75%, rgba(106, 77, 212, 0.12) 0%, transparent 40%);
-    }
-    .login-gradient > * {
-        position: relative;
-        z-index: 1;
-    }
-    .login-gradient .brand-logo-large {
-        background: rgba(255,255,255,0.1);
-        backdrop-filter: blur(8px);
-        width: 60px;
-        height: 60px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-    }
-    .login-credentials {
-        margin-top: 1.5rem;
-        background: rgba(255,255,255,0.05);
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 16px;
-        padding: 1rem;
-        width: 100%;
-        max-width: 340px;
-    }
-    .credential-item {
-        margin-bottom: 0.6rem;
-        padding-bottom: 0.6rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    .credential-item:last-child {
-        margin-bottom: 0;
-        padding-bottom: 0;
-        border-bottom: none;
-    }
-    .credential-item strong {
-        color: var(--vita-wisteria);
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .credential-item p {
-        margin: 0;
-        font-size: 0.8rem;
-        opacity: 0.9;
-    }
+        body {
+            font-family: 'Satoshi', sans-serif;
+            background-color: var(--vita-bright-gray);
+            color: var(--vita-black-coffee);
+        }
 
-    .login-form-panel {
-        padding: 2.5rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        background-color: #fff;
-    }
-    .login-form-panel .form-header {
-        max-width: 400px;
-        margin-bottom: 2.5rem;
-    }
-    .login-form-panel form {
-        max-width: 400px;
-    }
-    .form-control-vita {
-        background-color: #f8fafc;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 0.8rem 1rem;
-        transition: all 0.2s;
-    }
-    .form-control-vita:focus {
-        background-color: #fff;
-        border-color: var(--vita-dark-blue-gray);
-        box-shadow: 0 0 0 4px rgba(106, 77, 212, 0.1);
-        outline: none;
-    }
-    .btn-login-submit {
-        background-color: var(--vita-jacarta);
-        color: #fff;
-        border: none;
-        border-radius: 12px;
-        padding: 0.8rem;
-        font-weight: 700;
-        width: 100%;
-        transition: all 0.2s;
-        box-shadow: 0 4px 12px rgba(0, 2, 41, 0.2);
-    }
-    .btn-login-submit:hover {
-        background-color: #0e0f3d;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(0, 2, 41, 0.3);
-    }
+        /* ===== LAYOUT ===== */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--vita-bright-gray);
+            padding: 1rem;
+        }
 
-    @media (max-width: 991px) {
-        .login-gradient { display: none; }
-        .login-form-panel { padding: 2rem; width: 100%; align-items: center; }
-        .login-form-panel .form-header, .login-form-panel form { width: 100%; }
-    }
-</style>
+        .login-card {
+            display: flex;
+            width: 100%;
+            max-width: 1100px;
+            min-height: 600px;
+            background: #fff;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0, 2, 41, 0.12);
+            overflow: hidden;
+        }
+
+        /* ===== LEFT PANEL: GRADIENT ===== */
+        .login-gradient {
+            background: linear-gradient(160deg,
+                #000229 0%, #000229 18%,
+                #1a0a33 25%, #6E3377 38%,
+                #6A4DD4 52%, #8a6ddd 64%,
+                #CEB5D4 78%, #E2ECF5 100%
+            );
+            background-size: 160% 160%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem 2.5rem;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-gradient::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 30% 20%, rgba(106, 77, 212, 0.25) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(206, 181, 212, 0.12) 0%, transparent 45%);
+        }
+
+        .login-gradient > * { position: relative; z-index: 1; }
+
+        /* Brand */
+        .brand-area {
+            margin-bottom: 2.5rem;
+        }
+
+        .brand-logo-large {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+
+        .brand-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .brand-subtitle {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+
+        /* ===== CREDENTIALS CARD ===== */
+        .credentials-card {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 1.25rem 1.25rem 1rem;
+            width: 100%;
+            max-width: 360px;
+            transition: all 0.2s;
+        }
+
+        .credentials-card:hover {
+            background: rgba(255,255,255,0.09);
+            border-color: rgba(255,255,255,0.14);
+        }
+
+        .credentials-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        .credentials-header i {
+            font-size: 0.75rem;
+        }
+
+        .credential-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            margin-bottom: 0.4rem;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.04);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .credential-item:last-child { margin-bottom: 0; }
+
+        .credential-item:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.1);
+            transform: translateX(3px);
+        }
+
+        .role-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .role-dot.admin { background: var(--vita-dark-blue-gray); box-shadow: 0 0 6px rgba(106,77,212,0.5); }
+        .role-dot.analista { background: var(--vita-accent-teal); box-shadow: 0 0 6px rgba(59,130,246,0.5); }
+        .role-dot.medico { background: var(--vita-accent-green); box-shadow: 0 0 6px rgba(16,185,129,0.5); }
+
+        .credential-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cred-role-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.1rem;
+        }
+
+        .cred-detail {
+            font-size: 0.72rem;
+            opacity: 0.5;
+            font-weight: 400;
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+        }
+
+        .cred-copy-btn {
+            background: rgba(255,255,255,0.06);
+            border: none;
+            color: rgba(255,255,255,0.4);
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .cred-copy-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
+        /* ===== RIGHT PANEL: FORM ===== */
+        .login-form-panel {
+            padding: 3rem 3.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: #fff;
+        }
+
+        .form-header-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--vita-dark-blue-gray), #8a6ddd);
+            border-radius: 14px;
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 6px 20px rgba(106, 77, 212, 0.2);
+        }
+
+        .form-header h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--vita-jacarta);
+            letter-spacing: -0.3px;
+            margin-bottom: 0.3rem;
+        }
+
+        .form-header p {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+        }
+
+        /* Input groups */
+        .input-group-vita {
+            position: relative;
+            margin-bottom: 1.25rem;
+        }
+
+        .input-group-vita .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.9rem;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .form-control-vita {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.6rem;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            font-family: 'Satoshi', sans-serif;
+            color: #1e293b;
+            transition: all 0.2s;
+        }
+
+        .form-control-vita::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .form-control-vita:focus {
+            outline: none;
+            background: #fff;
+            border-color: var(--vita-dark-blue-gray);
+            box-shadow: 0 0 0 4px rgba(106, 77, 212, 0.08);
+        }
+
+        .form-control-vita:focus ~ .input-icon,
+        .input-group-vita:focus-within .input-icon {
+            color: var(--vita-dark-blue-gray);
+        }
+
+        /* Password toggle */
+        .btn-toggle-pass {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            padding: 0.25rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .btn-toggle-pass:hover { color: #64748b; }
+
+        /* Submit button */
+        .btn-login-submit {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, var(--vita-dark-blue-gray), #000229);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            font-family: 'Satoshi', sans-serif;
+            letter-spacing: 0.3px;
+            transition: all 0.25s;
+            box-shadow: 0 4px 16px rgba(0, 2, 41, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-login-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 2, 41, 0.3);
+        }
+
+        .btn-login-submit:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-login-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Alert */
+        #login-alert {
+            border-radius: 14px;
+            font-size: 0.8rem;
+            padding: 0.7rem 1rem;
+            border: none;
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        /* Footer */
+        .login-footer {
+            margin-top: 2.5rem;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 991px) {
+            .login-card { min-height: auto; }
+            .login-gradient { display: none; }
+            .login-form-panel {
+                padding: 2.5rem 2rem;
+                width: 100%;
+            }
+            .login-container { padding: 0; }
+            .login-card { border-radius: 0; }
+        }
+
+        @media (max-width: 575px) {
+            .login-form-panel { padding: 2rem 1.25rem; }
+        }
+    </style>
+</head>
+<body>
 
 <div class="login-container">
     <div class="login-card row g-0">
-        <!-- Panel Izquierdo: Branding y Credenciales -->
+
+        <!-- ===== LEFT PANEL: BRAND + CREDENTIALS ===== -->
         <div class="col-lg-6 login-gradient">
-            <div class="brand-logo-large">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.8rem;height:1.8rem;"><circle cx="7" cy="5" r="2"/><circle cx="17" cy="5" r="2"/><path d="M7 7Q12 12 12 17"/><path d="M17 7Q12 12 12 17"/><circle cx="12" cy="20" r="2.8"/></svg>
+            <div class="brand-area">
+                <div class="brand-logo-large">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.6rem;height:1.6rem;"><circle cx="7" cy="5" r="2"/><circle cx="17" cy="5" r="2"/><path d="M7 7Q12 12 12 17"/><path d="M17 7Q12 12 12 17"/><circle cx="12" cy="20" r="2.8"/></svg>
+                </div>
+                <div class="brand-title">VITA Clinical</div>
+                <div class="brand-subtitle">Plataforma integral de analítica y predicción clínica inteligente.</div>
             </div>
-            <h1 class="display-6 fw-bold mb-2" style="font-family: 'Satoshi';">VITA Clinical</h1>
-            <p class="fs-6 mb-4 opacity-75">Plataforma integral de analítica y predicción clínica inteligente.</p>
 
-            <div class="login-credentials">
-                <h6 class="text-white mb-3 fw-bold" style="letter-spacing: 1px; font-size: 0.8rem;">ACCESO DEMOSTRATIVO</h6>
-                
-                <div class="credential-item">
-                    <strong>Administrador</strong>
-                    <p>admin@vita.com · Admin123</p>
+            <div class="credentials-card" id="credenciales-card">
+                <div class="credentials-header">
+                    <i class="fa-solid fa-key"></i>
+                    <span>Credenciales de Prueba</span>
                 </div>
 
-                <div class="credential-item">
-                    <strong>Analista de Datos</strong>
-                    <p>analista@vita.com · Analista123</p>
+                <div class="credential-item" data-role="admin">
+                    <span class="role-dot admin"></span>
+                    <div class="credential-info">
+                        <div class="cred-role-label">Administrador</div>
+                        <div class="cred-detail">admin@vita.com · Admin123</div>
+                    </div>
+                    <button class="cred-copy-btn" title="Copiar credenciales" onclick="copiarCredenciales('admin@vita.com', 'Admin123')">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
                 </div>
 
-                <div class="credential-item">
-                    <strong>Médico Especialista</strong>
-                    <p>medico@vita.com · Medico123</p>
+                <div class="credential-item" data-role="analista">
+                    <span class="role-dot analista"></span>
+                    <div class="credential-info">
+                        <div class="cred-role-label">Analista de Datos</div>
+                        <div class="cred-detail">analista@vita.com · Analista123</div>
+                    </div>
+                    <button class="cred-copy-btn" title="Copiar credenciales" onclick="copiarCredenciales('analista@vita.com', 'Analista123')">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+
+                <div class="credential-item" data-role="medico">
+                    <span class="role-dot medico"></span>
+                    <div class="credential-info">
+                        <div class="cred-role-label">Médico Especialista</div>
+                        <div class="cred-detail">medico@vita.com · Medico123</div>
+                    </div>
+                    <button class="cred-copy-btn" title="Copiar credenciales" onclick="copiarCredenciales('medico@vita.com', 'Medico123')">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Panel Derecho: Formulario -->
+        <!-- ===== RIGHT PANEL: FORM ===== -->
         <div class="col-lg-6 login-form-panel">
             <div class="form-header">
-                <h3 class="fw-bold mb-1" style="color: var(--vita-jacarta);">Iniciar Sesión</h3>
-                <p class="text-muted small">Bienvenido de nuevo. Por favor, ingresa tus credenciales.</p>
+                <div class="form-header-icon">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                </div>
+                <h3>Iniciar Sesión</h3>
+                <p>Bienvenido de nuevo. Ingresa tus credenciales para continuar.</p>
             </div>
 
-            <div id="login-alert" class="alert alert-danger d-none mb-4" style="border-radius: 12px; font-size: 0.85rem;">
-                <i class="fa-solid fa-circle-exclamation me-2"></i> Credenciales incorrectas.
+            <div id="login-alert" class="alert d-none">
+                <i class="fa-solid fa-circle-exclamation me-2"></i> Credenciales incorrectas. Verifica tu correo y contraseña.
             </div>
 
             <form id="form-login">
-                <div class="mb-3">
-                    <label class="form-label small fw-bold text-secondary">CORREO ELECTRÓNICO</label>
-                    <input type="email" class="form-control-vita w-100" id="username" placeholder="nombre@ejemplo.com" required style="padding: 0.6rem 0.8rem; font-size: 0.85rem;">
+                <div class="input-group-vita">
+                    <input type="email" class="form-control-vita" id="username" placeholder="nombre@ejemplo.com" required autocomplete="email">
+                    <span class="input-icon"><i class="fa-regular fa-envelope"></i></span>
                 </div>
 
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between">
-                        <label class="form-label small fw-bold text-secondary">CONTRASEÑA</label>
-                    </div>
-                    <div class="position-relative">
-                        <input type="password" class="form-control-vita w-100" id="password" placeholder="••••••••" required style="padding: 0.6rem 0.8rem; font-size: 0.85rem;">
-                        <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-secondary text-decoration-none pe-3" id="toggle-password">
-                            <i class="fa-solid fa-eye" id="password-icon"></i>
-                        </button>
-                    </div>
+                <div class="input-group-vita">
+                    <input type="password" class="form-control-vita" id="password" placeholder="••••••••" required autocomplete="current-password">
+                    <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+                    <button type="button" class="btn-toggle-pass" id="toggle-password" tabindex="-1">
+                        <i class="fa-regular fa-eye" id="password-icon"></i>
+                    </button>
                 </div>
 
-                <button type="submit" class="btn-login-submit" id="btn-login-submit" style="padding: 0.7rem;">
-                    ENTRAR AL SISTEMA
+                <button type="submit" class="btn-login-submit" id="btn-login-submit">
+                    <span>ENTRAR AL SISTEMA</span>
+                    <i class="fa-solid fa-arrow-right" style="font-size:0.75rem;"></i>
                 </button>
             </form>
 
-            <div class="mt-4 text-center text-muted small" style="font-size: 0.75rem;">
+            <div class="login-footer">
                 &copy; 2026 VITA Clinical Systems.
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Toggle Password Visibility
-    document.getElementById('toggle-password').addEventListener('click', function() {
-        const input = document.getElementById('password');
-        const icon = document.getElementById('password-icon');
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.replace('fa-eye', 'fa-eye-slash');
-        } else {
-            input.type = 'password';
-            icon.classList.replace('fa-eye-slash', 'fa-eye');
+    (function() {
+        // Redirect if already logged in
+        if (localStorage.getItem('token_acceso')) {
+            window.location.href = '/dashboard/';
+            return;
         }
-    });
 
-    // Handle Login
-    document.getElementById('form-login').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const alertBox = document.getElementById('login-alert');
-        const btnSubmit = document.getElementById('btn-login-submit');
-
-        alertBox.classList.add('d-none');
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin me-2"></i> VERIFICANDO...`;
-
-        try {
-            const response = await fetch('/api/auth/login/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: username, password: password })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                localStorage.setItem('token_acceso', data.access);
-                localStorage.setItem('token_refresco', data.refresh);
-
-                // Obtener info del usuario para guardar el rol
-                const meResponse = await fetch('/api/etl/auth/me/', {
-                    headers: { 'Authorization': `Bearer ${data.access}` }
-                });
-                if (meResponse.ok) {
-                    const meData = await meResponse.json();
-                    localStorage.setItem('usuario_rol', meData.rol);
-                }
-
-                window.location.href = '/dashboard/';
+        // Toggle Password
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            var input = document.getElementById('password');
+            var icon = document.getElementById('password-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
             } else {
-                alertBox.classList.remove('d-none');
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
             }
-        } catch (error) {
-            console.error("Error de red:", error);
-            alertBox.classList.remove('d-none');
-        } finally {
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = `ENTRAR AL SISTEMA`;
+        });
+
+        // Credential items: click to fill form
+        document.querySelectorAll('.credential-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                var detail = this.querySelector('.cred-detail');
+                if (!detail) return;
+                var parts = detail.textContent.split(' · ');
+                if (parts.length === 2) {
+                    document.getElementById('username').value = parts[0].trim();
+                    document.getElementById('password').value = parts[1].trim();
+                    // highlight effect
+                    this.style.background = 'rgba(255,255,255,0.15)';
+                    setTimeout(function() {
+                        item.style.background = '';
+                    }, 400);
+                }
+            });
+        });
+
+        // Login submit
+        document.getElementById('form-login').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            var alertBox = document.getElementById('login-alert');
+            var btnSubmit = document.getElementById('btn-login-submit');
+
+            alertBox.classList.add('d-none');
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> VERIFICANDO...';
+
+            try {
+                var response = await fetch('/api/auth/login/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username, password: password })
+                });
+
+                var data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token_acceso', data.access);
+                    localStorage.setItem('token_refresco', data.refresh);
+
+                    var meResponse = await fetch('/api/etl/auth/me/', {
+                        headers: { 'Authorization': 'Bearer ' + data.access }
+                    });
+                    if (meResponse.ok) {
+                        var meData = await meResponse.json();
+                        localStorage.setItem('usuario_rol', meData.rol);
+                    }
+
+                    window.location.href = '/dashboard/';
+                } else {
+                    alertBox.classList.remove('d-none');
+                }
+            } catch (error) {
+                console.error('Error de red:', error);
+                alertBox.classList.remove('d-none');
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = 'ENTRAR AL SISTEMA';
+            }
+        });
+
+        // Auto-fill on first credential click removed — now fill on click via credential-item handler
+    })();
+
+    function copiarCredenciales(email, password) {
+        var texto = email + ' / ' + password;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(texto).catch(function() {});
         }
-    });
+    }
 </script>
-{% endblock %}
+</body>
+</html>

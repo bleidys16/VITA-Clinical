@@ -134,30 +134,40 @@
             </div>
 
             <nav class="nav flex-column flex-grow-1">
-                <a href="/dashboard/" class="nav-link-vita" id="nav-dashboard">
+                <a href="/dashboard/" class="nav-link-vita" id="nav-dashboard"
+                   data-admin="allowed" data-medico="allowed" data-analista="allowed">
                     <i class="fa-solid fa-chart-pie"></i> Dashboard
                 </a>
-                <a href="/analitica/" class="nav-link-vita" id="nav-analitica">
+                <a href="/analitica/" class="nav-link-vita" id="nav-analitica"
+                   data-admin="allowed" data-medico="denied" data-analista="allowed">
                     <i class="fa-solid fa-magnifying-glass-chart"></i> Analítica
+                    <i class="fa-solid fa-lock denied-icon d-none ms-auto" style="font-size:0.65rem;opacity:0.6;"></i>
                 </a>
-                <a href="/pacientes/" class="nav-link-vita" id="nav-pacientes">
+                <a href="/pacientes/" class="nav-link-vita" id="nav-pacientes"
+                   data-admin="allowed" data-medico="allowed" data-analista="allowed">
                     <i class="fa-solid fa-user-group"></i> Pacientes
                 </a>
-                <a href="/ml-modeling/" class="nav-link-vita" id="nav-ml">
+                <a href="/ml-modeling/" class="nav-link-vita" id="nav-ml"
+                   data-admin="allowed" data-medico="denied" data-analista="allowed">
                     <i class="fa-solid fa-brain"></i> Predicción IA
+                    <i class="fa-solid fa-lock denied-icon d-none ms-auto" style="font-size:0.65rem;opacity:0.6;"></i>
                 </a>
-                <a href="/etl/" class="nav-link-vita" id="nav-etl">
+                <a href="/etl/" class="nav-link-vita" id="nav-etl"
+                   data-admin="allowed" data-medico="denied" data-analista="allowed">
                     <i class="fa-solid fa-database"></i> Control ETL
+                    <i class="fa-solid fa-lock denied-icon d-none ms-auto" style="font-size:0.65rem;opacity:0.6;"></i>
                 </a>
-                <a href="/usuarios/" class="nav-link-vita" id="nav-usuarios">
+                <a href="/usuarios/" class="nav-link-vita" id="nav-usuarios"
+                   data-admin="allowed" data-medico="hidden" data-analista="hidden">
                     <i class="fa-solid fa-users-gear"></i> Usuarios
+                    <i class="fa-solid fa-lock denied-icon d-none ms-auto" style="font-size:0.65rem;opacity:0.6;"></i>
                 </a>
             </nav>
 
             <div class="mt-auto pt-4 border-top border-white border-opacity-10">
-                <div class="d-flex align-items-center gap-3 px-2 mb-4">
-                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; color: var(--vita-indigo-dark);">
-                        <i class="fa-solid fa-user"></i>
+                <div class="d-flex align-items-center gap-3 px-2 mb-4" id="user-info-trigger" role="button" data-bs-toggle="modal" data-bs-target="#profileModal" style="cursor: pointer;">
+                    <div id="user-avatar" class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 40px; height: 40px; background: #6A4DD4; color: #fff; font-size: 1rem;">
+                        U
                     </div>
                     <div class="overflow-hidden">
                         <div class="fw-bold small text-truncate" id="user-display-name">Usuario</div>
@@ -178,6 +188,58 @@
     {% endblock %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Profile Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+                <div class="modal-body p-4 text-center">
+                    <div id="profile-avatar" class="rounded-circle d-flex align-items-center justify-content-center fw-bold mx-auto mb-3" style="width: 72px; height: 72px; background: #6A4DD4; color: #fff; font-size: 1.8rem;">
+                        U
+                    </div>
+                    <div id="profile-role-badge" class="badge mb-3" style="background: rgba(106,77,212,0.1); color: #6A4DD4; font-size: 0.7rem; font-weight: 600; padding: 0.3rem 0.8rem; border-radius: 20px;">
+                        —
+                    </div>
+
+                    <form id="form-profile">
+                        <div class="text-start mb-3">
+                            <label class="form-label small fw-semibold text-secondary">USUARIO</label>
+                            <input type="text" class="form-control" id="profile-username" style="border-radius: 12px; border: 1.5px solid #e2e8f0; padding: 0.6rem 0.8rem; font-size: 0.85rem;" readonly>
+                        </div>
+                        <div class="text-start mb-3">
+                            <label class="form-label small fw-semibold text-secondary">CORREO ELECTRÓNICO</label>
+                            <input type="email" class="form-control" id="profile-email" style="border-radius: 12px; border: 1.5px solid #e2e8f0; padding: 0.6rem 0.8rem; font-size: 0.85rem;" readonly>
+                        </div>
+
+                        <div id="profile-password-section" class="d-none">
+                            <hr class="my-3">
+                            <h6 class="text-start fw-bold mb-3" style="font-size: 0.85rem; color: var(--vita-jacarta);">Cambiar Contraseña</h6>
+                            <div class="text-start mb-3">
+                                <label class="form-label small fw-semibold text-secondary">CONTRASEÑA ACTUAL</label>
+                                <input type="password" class="form-control" id="profile-current-password" style="border-radius: 12px; border: 1.5px solid #e2e8f0; padding: 0.6rem 0.8rem; font-size: 0.85rem;">
+                            </div>
+                            <div class="text-start mb-3">
+                                <label class="form-label small fw-semibold text-secondary">NUEVA CONTRASEÑA</label>
+                                <input type="password" class="form-control" id="profile-new-password" style="border-radius: 12px; border: 1.5px solid #e2e8f0; padding: 0.6rem 0.8rem; font-size: 0.85rem;">
+                            </div>
+                        </div>
+                    </form>
+
+                    <div id="profile-save-section" class="d-none mt-3">
+                        <button class="btn w-100 text-white fw-bold" id="btn-save-profile" style="background: #6A4DD4; border-radius: 12px; padding: 0.6rem; transition: all 0.2s;">
+                            Guardar Cambios
+                        </button>
+                    </div>
+
+                    <div id="profile-readonly-msg" class="small text-muted mt-3 d-none">
+                        <i class="fa-regular fa-lock me-1"></i> Solo lectura — Solo el administrador puede editar su perfil.
+                    </div>
+                </div>
+                <button type="button" class="btn-close position-absolute top-0 end-0 mt-3 me-3" data-bs-dismiss="modal" style="font-size: 0.8rem;"></button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function logout() {
             localStorage.removeItem('token_acceso');
@@ -186,21 +248,168 @@
             window.location.href = '/login/';
         }
 
+        function applyRoleAccess(role) {
+            role = role.toLowerCase();
+            const navLinks = document.querySelectorAll('.nav-link-vita[id]');
+            navLinks.forEach(function(el) {
+                var state = el.dataset[role] || 'hidden';
+                el.classList.remove('nav-allowed', 'nav-denied', 'nav-hidden');
+                el.classList.add('nav-' + state);
+                var lockIcon = el.querySelector('.denied-icon');
+                if (state === 'allowed') {
+                    el.style.display = 'flex';
+                    if (el.getAttribute('data-original-href')) {
+                        el.href = el.getAttribute('data-original-href');
+                    }
+                    el.removeAttribute('aria-disabled');
+                    el.removeAttribute('tabindex');
+                    if (lockIcon) lockIcon.classList.add('d-none');
+                } else if (state === 'denied') {
+                    el.style.display = 'flex';
+                    if (!el.getAttribute('data-original-href')) {
+                        el.setAttribute('data-original-href', el.href);
+                    }
+                    el.href = 'javascript:void(0)';
+                    el.setAttribute('aria-disabled', 'true');
+                    el.setAttribute('tabindex', '-1');
+                    if (lockIcon) lockIcon.classList.remove('d-none');
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        }
+
+        function setActiveNav() {
+            var currentPath = window.location.pathname;
+            document.querySelectorAll('.nav-link-vita[id]').forEach(function(el) {
+                if (el.getAttribute('href') === currentPath) {
+                    el.classList.add('active');
+                }
+            });
+        }
+
+        var profileData = null;
+
+        function openProfileModal() {
+            var role = (localStorage.getItem('usuario_rol') || '').toUpperCase();
+            var isAdmin = role === 'ADMIN';
+            var avatarEl = document.getElementById('profile-avatar');
+            var badgeEl = document.getElementById('profile-role-badge');
+            var usernameEl = document.getElementById('profile-username');
+            var emailEl = document.getElementById('profile-email');
+            var passwordSection = document.getElementById('profile-password-section');
+            var saveSection = document.getElementById('profile-save-section');
+            var readOnlyMsg = document.getElementById('profile-readonly-msg');
+
+            if (profileData) {
+                var initial = (profileData.username || 'U')[0].toUpperCase();
+                avatarEl.textContent = initial;
+                usernameEl.value = profileData.username || '';
+                emailEl.value = profileData.email || '';
+                badgeEl.textContent = profileData.rol_display || profileData.rol || '—';
+
+                var avatarColors = { ADMIN: '#6A4DD4', ANALISTA: '#3B82F6', MEDICO: '#10B981' };
+                avatarEl.style.background = avatarColors[role] || '#6A4DD4';
+                badgeEl.style.color = avatarColors[role] || '#6A4DD4';
+                badgeEl.style.background = (avatarColors[role] || '#6A4DD4') + '18';
+
+                if (isAdmin) {
+                    usernameEl.removeAttribute('readonly');
+                    emailEl.removeAttribute('readonly');
+                    passwordSection.classList.remove('d-none');
+                    saveSection.classList.remove('d-none');
+                    readOnlyMsg.classList.add('d-none');
+                } else {
+                    usernameEl.setAttribute('readonly', 'readonly');
+                    emailEl.setAttribute('readonly', 'readonly');
+                    passwordSection.classList.add('d-none');
+                    saveSection.classList.add('d-none');
+                    readOnlyMsg.classList.remove('d-none');
+                }
+            }
+        }
+
         // Cargar info de usuario si existe el token
-        document.addEventListener('DOMContentLoaded', async () => {
-            const token = localStorage.getItem('token_acceso');
-            if (token) {
+        document.addEventListener('DOMContentLoaded', async function() {
+            setActiveNav();
+
+            var savedRole = localStorage.getItem('usuario_rol');
+            if (savedRole) {
+                applyRoleAccess(savedRole);
+            }
+
+            var token = localStorage.getItem('token_acceso');
+            var nameEl = document.getElementById('user-display-name');
+            var roleEl = document.getElementById('user-display-role');
+            var avatarEl = document.getElementById('user-avatar');
+            if (token && nameEl) {
                 try {
-                    const response = await fetch('/api/etl/auth/me/', {
-                        headers: { 'Authorization': `Bearer ${token}` }
+                    var response = await fetch('/api/etl/auth/me/', {
+                        headers: { 'Authorization': 'Bearer ' + token }
                     });
                     if (response.ok) {
-                        const data = await response.json();
-                        document.getElementById('user-display-name').textContent = data.username;
-                        document.getElementById('user-display-role').textContent = data.rol;
+                        profileData = await response.json();
+                        nameEl.textContent = profileData.username;
+                        roleEl.textContent = profileData.rol_display || profileData.rol;
+                        localStorage.setItem('usuario_rol', profileData.rol);
+                        applyRoleAccess(profileData.rol);
+
+                        var initial = (profileData.username || 'U')[0].toUpperCase();
+                        avatarEl.textContent = initial;
+                        var roleColors = { ADMIN: '#6A4DD4', ANALISTA: '#3B82F6', MEDICO: '#10B981' };
+                        avatarEl.style.background = roleColors[profileData.rol] || '#6A4DD4';
                     }
                 } catch (e) { console.error(e); }
             }
+
+            // Profile modal trigger
+            var profileTrigger = document.getElementById('profileModal');
+            if (profileTrigger) {
+                profileTrigger.addEventListener('show.bs.modal', openProfileModal);
+            }
+
+            // Save profile
+            document.getElementById('btn-save-profile')?.addEventListener('click', async function() {
+                var btn = this;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Guardando...';
+
+                var body = {
+                    username: document.getElementById('profile-username').value,
+                    email: document.getElementById('profile-email').value,
+                    current_password: document.getElementById('profile-current-password').value,
+                    new_password: document.getElementById('profile-new-password').value,
+                };
+
+                try {
+                    var res = await fetch('/api/etl/auth/profile/', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + localStorage.getItem('token_acceso')
+                        },
+                        body: JSON.stringify(body)
+                    });
+                    var result = await res.json();
+                    if (res.ok) {
+                        profileData.username = result.username;
+                        profileData.email = result.email;
+                        document.getElementById('user-display-name').textContent = result.username;
+                        document.getElementById('profile-current-password').value = '';
+                        document.getElementById('profile-new-password').value = '';
+                        btn.innerHTML = '<i class="fa-solid fa-check me-2"></i> Guardado';
+                        setTimeout(function() { btn.innerHTML = 'Guardar Cambios'; btn.disabled = false; }, 1500);
+                    } else {
+                        alert(result.error || 'Error al guardar');
+                        btn.disabled = false;
+                        btn.innerHTML = 'Guardar Cambios';
+                    }
+                } catch (e) {
+                    alert('Error de conexión');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Guardar Cambios';
+                }
+            });
         });
     </script>
     {% block extra_js %}{% endblock %}
