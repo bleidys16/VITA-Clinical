@@ -4,6 +4,7 @@ from .views import login_view, dashboard_view, etl_view, pacientes_view, ml_mode
 from apps.analytics.views import DashboardKPIsView
 
 urlpatterns = [
+    path('', RedirectView.as_view(url='login/', permanent=False), name='index'),
     path('login/', login_view, name='login'),
     path('dashboard/', dashboard_view, name='dashboard'),
     path('etl/', etl_view, name='etl'),
