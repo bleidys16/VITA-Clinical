@@ -23,13 +23,13 @@
     .badge-imc.obesidad { background-color: #f8d7da; color: #58151c; }
     .paciente-row { transition: background-color 0.15s ease-in-out; }
     .th-group { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; border: none; }
-    .th-group.paciente { background: #3F2A52; color: #fff; }
-    .th-group.demografia { background: #4a6fa5; color: #fff; }
-    .th-group.antropometria { background: #6f42c1; color: #fff; }
-    .th-group.signos-vitales { background: #0d6efd; color: #fff; }
-    .th-group.estilo-vida { background: #198754; color: #fff; }
-    .th-group.diagnostico { background: #fd7e14; color: #fff; }
-    .th-group.acciones { background: #6c757d; color: #fff; }
+    .th-group.paciente { background: var(--vita-jacarta); color: #fff; }
+    .th-group.demografia { background: #1a0a33; color: #fff; }
+    .th-group.antropometria { background: var(--vita-velvet-orchid); color: #fff; }
+    .th-group.signos-vitales { background: var(--vita-majorelle-blue); color: #fff; }
+    .th-group.estilo-vida { background: var(--vita-bajo); color: #fff; }
+    .th-group.diagnostico { background: var(--vita-alto); color: #fff; }
+    .th-group.acciones { background: var(--vita-velvet-orchid); color: #fff; }
     .th-sub { font-size: 0.7rem; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; white-space: nowrap; }
     .table-cell-group { font-size: 0.75rem; color: #212529; line-height: 1.6; }
     .cell-label { color: #6c757d; font-size: 0.65rem; }
@@ -121,10 +121,10 @@
         <table class="table table-hover align-middle mb-0" id="tabla-pacientes" style="font-size: 0.8rem;">
             <thead class="sticky-top">
                 <tr>
-                    <th class="th-group paciente sticky-col-left" colspan="2" style="width: 14%;">Paciente</th>
-                    <th class="th-group demografia" colspan="2" style="width: 8%;">Demografía</th>
-                    <th class="th-group antropometria" colspan="3" style="width: 12%;">Antropometría</th>
-                    <th class="th-group signos-vitales" colspan="7" style="width: 28%;">Signos Vitales</th>
+                    <th class="th-group paciente sticky-col-left" colspan="2" style="width: 16%;">Paciente</th>
+                    <th class="th-group demografia" colspan="1" style="width: 5%;">Demografía</th>
+                    <th class="th-group antropometria" colspan="3" style="width: 13%;">Antropometría</th>
+                    <th class="th-group signos-vitales" colspan="7" style="width: 30%;">Signos Vitales</th>
                     <th class="th-group estilo-vida" colspan="4" style="width: 14%;">Estilo de Vida</th>
                     <th class="th-group diagnostico" colspan="3" style="width: 16%;">Diagnóstico</th>
                     <th id="th-acciones" class="th-group acciones sticky-col-actions d-none text-center" style="width: 6%;">Acciones</th>
@@ -132,8 +132,7 @@
                 <tr>
                     <th class="th-sub sticky-col-left text-center">#</th>
                     <th class="th-sub sticky-col-name">Nombre</th>
-                    <th class="th-sub text-center">Edad</th>
-                    <th class="th-sub text-center">Sexo</th>
+                    <th class="th-sub text-center">Edad/Sexo</th>
                     <th class="th-sub text-center">Peso</th>
                     <th class="th-sub text-center">Altura</th>
                     <th class="th-sub text-center">IMC</th>
@@ -156,7 +155,7 @@
             </thead>
             <tbody id="tabla-pacientes-body">
                 <tr id="loading-row">
-                    <td colspan="22" class="text-center py-4 text-muted">
+                    <td colspan="21" class="text-center py-4 text-muted">
                         <i class="fa-solid fa-circle-notch fa-spin me-2"></i> Cargando registros clínicos...
                     </td>
                 </tr>
@@ -334,7 +333,7 @@
                 renderizarPagina();
             } else {
                 document.getElementById('tabla-pacientes-body').innerHTML = `
-                    <tr><td colspan="22" class="text-center text-danger py-4">Error al cargar los datos.</td></tr>
+                    <tr><td colspan="21" class="text-center text-danger py-4">Error al cargar los datos.</td></tr>
                 `;
             }
         } catch (error) {
@@ -471,7 +470,7 @@
 
     function renderizarTabla(pacientes, total) {
         const tbody = document.getElementById('tabla-pacientes-body');
-        const cols = esAdmin ? 22 : 21;
+        const cols = esAdmin ? 21 : 20;
         if (pacientes.length === 0) {
             const msg = todosLosPacientes.length === 0
                 ? 'No hay pacientes registrados. Cargá un dataset desde ETL.'
@@ -492,6 +491,7 @@
             const pesoVal = p.peso != null ? p.peso + ' kg' : '—';
             const alturaVal = p.altura != null ? p.altura + ' m' : '—';
             const imcClasif = p.clasificacion_imc || '';
+            const sexoInicial = p.sexo ? p.sexo.charAt(0).toUpperCase() : '—';
 
             const tr = document.createElement('tr');
             tr.className = 'paciente-row';
@@ -501,8 +501,7 @@
                     <div class="fw-semibold text-dark" style="font-size:0.8rem;">${p.nombres} ${p.apellidos}</div>
                     ${p.diagnostico_preliminar ? `<small class="text-muted" style="font-size: 0.65rem;">${p.diagnostico_preliminar}</small>` : ''}
                 </td>
-                <td class="text-center">${p.edad ?? '—'}</td>
-                <td class="text-center">${p.sexo || '—'}</td>
+                <td class="text-center">${p.edad ?? '—'}<span class="text-muted"> · ${sexoInicial}</span></td>
                 <td class="text-center">${pesoVal}</td>
                 <td class="text-center">${alturaVal}</td>
                 <td class="text-center">

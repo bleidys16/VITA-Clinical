@@ -554,7 +554,7 @@ class ReportesView(APIView):
                     return 'Sí' if v else 'No'
 
                 headers = [
-                    'ID', 'Paciente', 'Edad', 'Sexo', 'Peso', 'Altura', 'IMC',
+                    'ID', 'Paciente', 'Edad/\nSexo', 'Peso', 'Altura', 'IMC',
                     'PA\n(Sist)', 'PA\n(Diast)', 'FC', 'Glu', 'Col',
                     'SpO₂', 'Temp', 'Fum', 'Alc', 'Act.\nFís', 'Antec',
                     'Diagnóstico', 'Riesgo', 'Fecha'
@@ -562,11 +562,11 @@ class ReportesView(APIView):
                 table_data = [headers]
 
                 for p in pacientes_qs:
+                    sexo_inicial = p.sexo[0].upper() if p.sexo else '—'
                     table_data.append([
                         str(p.id_paciente),
                         f"{p.nombres} {p.apellidos}",
-                        str(p.edad or ''),
-                        p.sexo or '',
+                        f"{p.edad or ''} {sexo_inicial}",
                         fmt(p.peso, 1),
                         fmt(p.altura, 2),
                         fmt(p.imc, 1),
@@ -586,7 +586,7 @@ class ReportesView(APIView):
                         p.fecha_consulta.strftime('%d/%m/%Y') if p.fecha_consulta else '',
                     ])
 
-                col_widths = [28, 110, 26, 34, 32, 32, 32, 30, 30, 28, 30, 30, 30, 28, 26, 26, 34, 28, 90, 44, 52]
+                col_widths = [28, 110, 34, 32, 32, 32, 30, 30, 28, 30, 30, 30, 28, 26, 26, 34, 28, 90, 44, 52]
                 table = Table(table_data, colWidths=col_widths, repeatRows=1)
                 table.setStyle(TableStyle([
                     ('BACKGROUND', (0, 0), (-1, 0), HexColor('#3F2A52')),
@@ -596,7 +596,7 @@ class ReportesView(APIView):
                     ('FONTSIZE', (0, 1), (-1, -1), 6.5),
                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                     ('ALIGN', (1, 0), (1, -1), 'LEFT'),
-                    ('ALIGN', (18, 0), (18, -1), 'LEFT'),
+                    ('ALIGN', (17, 0), (17, -1), 'LEFT'),
                     ('GRID', (0, 0), (-1, -1), 0.4, HexColor('#BEAEDB')),
                     ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, HexColor('#F5F0FF')]),
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
