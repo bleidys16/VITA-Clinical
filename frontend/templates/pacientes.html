@@ -56,18 +56,7 @@
                 <button id="btn-nuevo-paciente" class="btn btn-vita-primary shadow-sm" style="display: none;" onclick="abrirModalCrear()">
                     <i class="fa-solid fa-plus me-1"></i> Nuevo Paciente
                 </button>
-                <div class="btn-group shadow-sm" role="group">
-                    <button class="btn btn-outline-success" id="btn-excel" onclick="descargarReporte('excel')">
-                        <i class="fa-solid fa-file-excel me-1"></i> Excel
-                    </button>
-            <button class="btn btn-outline-secondary" id="btn-csv" onclick="descargarReporte('csv')">
-                <i class="fa-solid fa-file-csv me-1"></i> CSV
-            </button>
-            <button class="btn btn-outline-danger" onclick="descargarReporte('pdf')">
-                <i class="fa-solid fa-file-pdf me-1"></i> PDF
-            </button>
-        </div>
-    </div>
+            </div>
 </div>
 </div>
 </div>
@@ -290,7 +279,6 @@
     let pageActual = 1;
     const PAGE_SIZE = 15;
     let esAdmin = false;
-    let esMedico = false;
     let paginacionInicializada = false;
 
     // ── Utilidades ──────────────────────────────────────────
@@ -308,16 +296,11 @@
 
         const rol = localStorage.getItem('usuario_rol');
         esAdmin = rol === 'ADMIN';
-        esMedico = rol === 'MEDICO';
 
         if (esAdmin) {
             document.getElementById('btn-nuevo-paciente').style.display = 'inline-block';
             document.getElementById('th-acciones').classList.remove('d-none');
             document.getElementById('th-acciones-sub').classList.remove('d-none');
-        }
-        if (esMedico) {
-            document.getElementById('btn-excel').style.display = 'none';
-            document.getElementById('btn-csv').style.display = 'none';
         }
 
         try {
@@ -532,35 +515,6 @@
             `;
             tbody.appendChild(tr);
         });
-    }
-
-    // ── Reportes ────────────────────────────────────────────
-    async function descargarReporte(formato) {
-        const token = localStorage.getItem('token_acceso');
-        if (!token) return;
-        try {
-            const response = await fetch(`/api/etl/reportes/?formato=${formato}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) {
-                const err = await response.json().catch(() => ({}));
-                alert(err.error || 'Error al descargar el reporte');
-                return;
-            }
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const extensiones = { excel: 'xlsx', csv: 'csv', pdf: 'pdf' };
-            a.download = `reporte_vita_${new Date().toISOString().slice(0,10)}.${extensiones[formato] || formato}`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error("Error descargando reporte:", error);
-            alert("Error al descargar el reporte");
-        }
     }
 
     // ── CRUD Pacientes ──────────────────────────────────────

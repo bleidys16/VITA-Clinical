@@ -28,3 +28,7 @@ def analitica_view(request):
 @never_cache
 def usuarios_view(request):
     return render(request, 'usuarios.html')
+
+@never_cache
+def reportes_view(request):
+    return render(request, 'reportes.html')

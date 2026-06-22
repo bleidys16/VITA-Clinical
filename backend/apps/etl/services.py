@@ -6,7 +6,7 @@ from datetime import datetime
 from django.db import models, transaction
 from django.contrib.auth.models import User
 from .models import Paciente, HistorialETL, DashboardKPIs
-from .clasificador_sexo import clasificar_sexo_por_nombre
+
 
 class PipelineETL:
     def __init__(self, file_path, usuario_id=None):
@@ -42,36 +42,43 @@ class PipelineETL:
         # 1. Depuración de duplicados basados en el ID único del paciente
         self.df.drop_duplicates(subset=['id_paciente'], keep='first', inplace=True)
 
-        # 2. Forzar conversión a numérico y Manejo de Datos Faltantes (Evita el error 'Alta')
+        # 2. Mapeo de texto a valores numéricos para presión arterial según referencias clínicas
+        mapeo_presion_sistolica = {
+            'baja': 100, 'normal': 115, 'elevada': 125,
+            'alta': 140, 'hipertensión': 140, 'hipertension': 140,
+            'etapa 1': 135, 'etapa 2': 140,
+        }
+        mapeo_presion_diastolica = {
+            'baja': 60, 'normal': 75, 'elevada': 85,
+            'alta': 90, 'hipertensión': 90, 'hipertension': 90,
+            'etapa 1': 90, 'etapa 2': 95,
+        }
+        if 'presión_sistólica' in self.df.columns:
+            self.df['presión_sistólica'] = self.df['presión_sistólica'].astype(str).str.lower().str.strip()
+            self.df['presión_sistólica'] = self.df['presión_sistólica'].replace(mapeo_presion_sistolica)
+        if 'presión_diastólica' in self.df.columns:
+            self.df['presión_diastólica'] = self.df['presión_diastólica'].astype(str).str.lower().str.strip()
+            self.df['presión_diastólica'] = self.df['presión_diastólica'].replace(mapeo_presion_diastolica)
+
+        # 3. Forzar conversión a numérico y Manejo de Datos Faltantes
         columnas_numericas = ['peso', 'altura', 'presión_sistólica', 'presión_diastólica', 
                               'frecuencia_cardiaca', 'glucosa', 'colesterol', 
                               'saturación_oxígeno', 'temperatura']
         
         for col in columnas_numericas:
             if col in self.df.columns:
-                # errors='coerce' convierte textos como 'Alta' o 'Baja' en NaN de forma segura
                 self.df[col] = pd.to_numeric(self.df[col], errors='coerce')
-                
-                # Ahora que es puramente numérico, calculamos la mediana y llenamos vacíos
                 mediana = self.df[col].median()
                 self.df[col] = self.df[col].fillna(mediana)
 
-        # 3. Estandarización de Variables Categóricas (Sexo)
+        # 4. Estandarización de Variables Categóricas (Sexo) — se conserva el valor original del dataset
         if 'sexo' in self.df.columns:
             self.df['sexo'] = self.df['sexo'].astype(str).str.strip().str.upper()
             mapeo_sexo = {'M': 'Masculino', 'F': 'Femenino', 'MASCULINO': 'Masculino', 'FEMENINO': 'Femenino'}
             self.df['sexo'] = self.df['sexo'].map(mapeo_sexo).fillna('No Definido')
+        # Nota: ya no se corrige sexo por nombre; se respeta el valor original del dataset
 
-        # 3b. Corrección de sexo basada en el nombre del paciente
-        if 'nombres' in self.df.columns:
-            for idx in self.df.index:
-                nombre = self.df.at[idx, 'nombres']
-                sexo_actual = self.df.at[idx, 'sexo']
-                sexo_correcto = clasificar_sexo_por_nombre(nombre)
-                if sexo_correcto and sexo_correcto != sexo_actual:
-                    self.df.at[idx, 'sexo'] = sexo_correcto
-
-        # 4. Corrección de Inconsistencias de Tipo (Edad)
+        # 5. Corrección de Inconsistencias de Tipo (Edad)
         if 'edad' in self.df.columns:
             mapeo_edades_texto = {'treinta': '30', 'cuarenta': '40', 'cincuenta': '50', 'Treinta': '30'}
             self.df['edad'] = self.df['edad'].astype(str).replace(mapeo_edades_texto)
@@ -79,7 +86,7 @@ class PipelineETL:
             edad_media = int(self.df['edad'].mean()) if not self.df['edad'].isna().all() else 40
             self.df['edad'] = self.df['edad'].fillna(edad_media).astype(int)
 
-        # 5. Normalización Ortográfica de Diagnósticos Preliminares
+        # 6. Normalización Ortográfica de Diagnósticos Preliminares
         if 'diagnóstico_preliminar' in self.df.columns:
             self.df['diagnóstico_preliminar'] = self.df['diagnóstico_preliminar'].astype(str).str.strip()
             mapeo_diagnosticos = {
@@ -93,7 +100,7 @@ class PipelineETL:
             }
             self.df['diagnóstico_preliminar'] = self.df['diagnóstico_preliminar'].replace(mapeo_diagnosticos)
 
-        # 6. Cálculos Clínicos Automatizados (Fórmula del IMC)
+        # 7. Cálculos Clínicos Automatizados (Fórmula del IMC)
         self.df['IMC'] = self.df['peso'] / (self.df['altura'] ** 2)
         self.df['IMC'] = self.df['IMC'].round(2)
 
@@ -104,7 +111,7 @@ class PipelineETL:
         self.df.loc[(self.df['IMC'] >= 25) & (self.df['IMC'] < 30), 'clasificacion_imc'] = 'Sobrepeso'
         self.df.loc[self.df['IMC'] >= 30, 'clasificacion_imc'] = 'Obesidad'
 
-        # 7. Conversión de Columnas Booleanas
+        # 8. Conversión de Columnas Booleanas
         columnas_bool = ['antecedentes_familiares', 'fumador', 'consumo_alcohol']
         for col in columnas_bool:
             if col in self.df.columns:
@@ -112,7 +119,7 @@ class PipelineETL:
                 self.df[col] = self.df[col].replace({'True': True, 'False': False, 1: True, 0: False})
                 self.df[col] = self.df[col].astype(bool)
 
-        # 8. Conversión de Fechas
+        # 9. Conversión de Fechas
         if 'fecha_consulta' in self.df.columns:
             self.df['fecha_consulta'] = pd.to_datetime(self.df['fecha_consulta'], errors='coerce')
             self.df['fecha_consulta'] = self.df['fecha_consulta'].fillna(pd.Timestamp(datetime.now()))
