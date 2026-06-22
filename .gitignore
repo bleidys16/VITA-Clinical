@@ -17,8 +17,9 @@ media/
 staticfiles/
 
 # Documentación (no se sube al repo)
-DOCUMENTACION_TECNICA_VITA_CLINICAL.md
-DOCUMENTACION_TECNICA_VITA_CLINICAL*.docx
+*.docx
+MANUAL_USUARIO_VITA_CLINICAL.md
+DOCUMENTACION_TECNICA_VITA_CLINICAL*.md
 convert_md_to_docx.py
 
 # IDE / OS / Logs
