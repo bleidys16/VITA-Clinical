@@ -1,627 +1,256 @@
 {% extends 'base.html' %}
-
-{% block title %}Modelado IA | VITA Clinical{% endblock %}
+{% block title %}Predicción IA | VITA Clinical{% endblock %}
 
 {% block content %}
 <style>
-    :root {
-        --pred-primary: #000229;
-        --pred-accent: #6A4DD4;
-        --pred-accent-light: #E2ECF5;
+    .pred-card { border: none; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); background: #fff; }
+    .paciente-item {
+        cursor: pointer; padding: 0.6rem 0.8rem; border-radius: 10px;
+        transition: background 0.15s; border: 1px solid transparent;
     }
-    .pred-card {
-        border: none;
-        border-radius: 16px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-        background: #fff;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .pred-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    }
-    .pred-slider-label {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .pred-slider-value {
-        color: var(--pred-primary);
-        font-weight: 700;
-        font-size: 0.9rem;
-    }
-    .form-range::-webkit-slider-thumb {
-        background: var(--pred-primary);
-    }
-    .form-range::-moz-range-thumb {
-        background: var(--pred-primary);
-    }
-    .pred-check-card {
-        border: 1.5px solid #dee2e6;
-        border-radius: 12px;
-        padding: 12px 16px;
-        background: #fff;
-        transition: border-color 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    .pred-check-card:hover {
-        border-color: var(--pred-accent);
-    }
-    .pred-check-card .form-check-input:checked {
-        background-color: var(--pred-primary);
-        border-color: var(--pred-primary);
-    }
-    .pred-btn {
-        background-color: var(--pred-primary);
-        border: none;
-        border-radius: 12px;
-        color: #fff;
-        font-weight: 600;
-        padding: 12px;
-        transition: background-color 0.2s;
-    }
-    .pred-btn:hover {
-        background-color: #5a3db5;
-        color: #fff;
-    }
-    .pred-result-empty {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        min-height: 400px;
-    }
-    .pred-result-icon-circle {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: var(--pred-accent-light);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 16px;
-    }
-    .pred-result-icon-circle i {
-        font-size: 2rem;
-        color: var(--pred-accent);
-    }
-    .pred-vars-card {
-        padding: 0.85rem 1rem;
-        border: 1px solid #e9ecef;
-    }
-    .pred-vars-card .pred-vars-title {
-        font-size: 0.68rem;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.5rem;
-    }
-    .pred-vars-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.35rem 0.75rem;
-    }
-    .pred-var-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.3rem 0.45rem;
-        background: #f8f9fb;
-        border-radius: 6px;
-        font-size: 0.72rem;
-    }
-    .pred-var-item .pred-var-label {
-        color: #6c757d;
-        white-space: nowrap;
-    }
-    .pred-var-item .pred-var-value {
-        font-weight: 700;
-        color: var(--vita-text-dark);
-        text-align: right;
-    }
-    .pred-vars-disclaimer {
-        font-size: 0.68rem;
-        padding: 0.45rem 0.6rem;
-        margin-top: auto;
-        border-radius: 6px;
-    }
-    .pred-right-stack {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-        gap: 0.75rem;
-    }
-    #card-resultado {
-        flex: 1 1 auto;
-        display: flex;
-        flex-direction: column;
-    }
-    #card-variables:not(.d-none) {
-        flex: 0 0 auto;
-        margin-top: auto;
-        display: flex;
-        flex-direction: column;
-    }
-    #pred-empty .pred-result-empty {
-        flex: 1;
-        min-height: 160px;
-    }
+    .paciente-item:hover, .paciente-item.active { background: #f0ecfa; border-color: var(--vita-majorelle-blue); }
+    .paciente-item.active { background: #e4def7; }
+    .pred-factores { display: flex; flex-direction: column; gap: 0.5rem; }
+    .pred-factor { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.8rem; background: #f8f9fb; border-radius: 10px; }
+    .pred-factor-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 </style>
 
 <div class="row mb-4">
     <div class="col-12">
         <div class="p-4 rounded shadow-sm" style="background-color: var(--vita-indigo-dark); color: #FFFFFF;">
-            <h2 class="fw-bold m-0" style="font-family: 'Satoshi'; color: #fff; font-size: 1.5rem;">
-                Motor de Predicción Clínica
-            </h2>
-            <p class="m-0 mt-1" style="opacity: 0.8; font-size: 0.95rem;">
-                Clasificador binario basado en Random Forest — Sano vs Enfermo
-            </p>
+            <h2 class="fw-bold m-0" style="font-family: 'Satoshi'; color: #fff; font-size: 1.5rem;">Predicción de Riesgo por Paciente</h2>
+            <p class="m-0 mt-1" style="opacity: 0.8; font-size: 0.95rem;">Seleccioná un paciente para ver su análisis predictivo personalizado</p>
         </div>
     </div>
 </div>
 
-<div class="row g-4 align-items-stretch">
-
-    <!-- Columna izquierda: formulario -->
-    <div class="col-12 col-lg-7 d-flex">
-        <div class="pred-card p-4 w-100">
-            <h5 class="fw-bold mb-4" style="color: var(--vita-jacarta);">
-                Variables clínicas
-            </h5>
-
-            <div class="row g-4">
-
-                <!-- Edad -->
-                <div class="col-md-6">
-                    <div class="pred-slider-label mb-1">
-                        <span class="fw-semibold text-secondary small">Edad</span>
-                        <span class="pred-slider-value"><span id="val-edad">45</span> años</span>
-                    </div>
-                    <input type="range" class="form-range" id="pred-edad" min="15" max="100" value="45" step="1">
-                </div>
-
-                <!-- IMC -->
-                <div class="col-md-6">
-                    <div class="pred-slider-label mb-1">
-                        <span class="fw-semibold text-secondary small">IMC</span>
-                        <span class="pred-slider-value"><span id="val-imc">27.5</span> kg/m²</span>
-                    </div>
-                    <input type="range" class="form-range" id="pred-imc" min="10" max="50" value="27.5" step="0.1">
-                </div>
-
-                <!-- Glucosa -->
-                <div class="col-md-6">
-                    <div class="pred-slider-label mb-1">
-                        <span class="fw-semibold text-secondary small">Glucosa</span>
-                        <span class="pred-slider-value"><span id="val-glucosa">100</span> mg/dL</span>
-                    </div>
-                    <input type="range" class="form-range" id="pred-glucosa" min="50" max="300" value="100" step="1">
-                </div>
-
-                <!-- Colesterol -->
-                <div class="col-md-6">
-                    <div class="pred-slider-label mb-1">
-                        <span class="fw-semibold text-secondary small">Colesterol</span>
-                        <span class="pred-slider-value"><span id="val-colesterol">190</span> mg/dL</span>
-                    </div>
-                    <input type="range" class="form-range" id="pred-colesterol" min="100" max="350" value="190" step="1">
-                </div>
-
-                <!-- Presión Sistólica -->
-                <div class="col-md-6">
-                    <div class="pred-slider-label mb-1">
-                        <span class="fw-semibold text-secondary small">Presión Sistólica</span>
-                        <span class="pred-slider-value"><span id="val-sistolica">120</span> mmHg</span>
-                    </div>
-                    <input type="range" class="form-range" id="pred-sistolica" min="80" max="220" value="120" step="1">
-                </div>
-
-                <!-- Frecuencia Cardíaca -->
-                <div class="col-md-6">
-                    <div class="pred-slider-label mb-1">
-                        <span class="fw-semibold text-secondary small">Frecuencia Cardíaca</span>
-                        <span class="pred-slider-value"><span id="val-fc">75</span> lpm</span>
-                    </div>
-                    <input type="range" class="form-range" id="pred-fc" min="40" max="140" value="75" step="1">
-                </div>
-
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="pred-card p-3">
+            <div class="input-group mb-3">
+                <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-search text-muted"></i></span>
+                <input type="text" id="search-paciente" class="form-control border-start-0" placeholder="Buscar por nombre, apellido o ID...">
             </div>
-
-            <!-- Factor de riesgo: fumador -->
-            <div class="mt-4">
-                <label class="fw-semibold text-secondary small mb-2">Factor de riesgo</label>
-                <div class="pred-check-card">
-                    <div>
-                        <div class="fw-semibold small" style="color: var(--vita-text-dark);">Fumador</div>
-                        <small class="text-muted">Consumo activo de tabaco</small>
-                    </div>
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input" type="checkbox" id="pred-fumador" role="switch">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Botón -->
-            <div class="mt-4">
-                <button id="btn-predict" class="pred-btn w-100">
-                    <i class="fa-solid fa-sparkles me-2"></i> Ejecutar predicción
-                </button>
+            <div id="pacientes-lista" class="d-flex flex-column gap-1" style="max-height:400px;overflow-y:auto;">
+                <div class="text-center text-muted small py-4"><i class="fa-solid fa-spinner fa-spin me-1"></i> Cargando pacientes...</div>
             </div>
         </div>
     </div>
 
-    <!-- Columna derecha: resultados -->
-    <div class="col-12 col-lg-5 d-flex">
-        <div class="pred-right-stack">
-
-        <!-- Tarjeta: RESULTADO DEL MODELO -->
-        <div id="card-resultado" class="pred-card p-4" style="border: 1px solid #dee2e6;">
-            <div class="text-muted small fw-semibold mb-2" style="letter-spacing: 0.5px;">RESULTADO DEL MODELO</div>
-
-            <!-- Estado vacío (visible por defecto) -->
-            <div id="pred-empty">
-                <div class="pred-result-empty" style="min-height: 200px;">
-                    <div class="pred-result-icon-circle">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <h6 class="fw-bold mb-2" style="color: var(--vita-text-dark);">Esperando datos</h6>
-                    <p class="text-muted text-center px-4 small mb-0">
-                        Completá las variables clínicas y ejecutá la predicción.
-                    </p>
+    <div class="col-lg-8">
+        <div id="pred-resultado">
+            <div class="pred-card p-5 text-center">
+                <div class="mb-3" style="width:80px;height:80px;border-radius:50%;background:var(--vita-alice-blue);display:flex;align-items:center;justify-content:center;margin:0 auto;">
+                    <i class="fa-solid fa-brain fa-2x" style="color:var(--vita-majorelle-blue);"></i>
                 </div>
-            </div>
-
-            <!-- Contenido con resultado (oculto por defecto) -->
-            <div id="pred-contenido" class="d-none">
-                <div class="d-flex align-items-center gap-3 mb-3">
-                    <span id="pred-badge" class="badge rounded-pill fs-6 fw-semibold px-3 py-2 d-inline-flex align-items-center gap-2" style="background:#fdf6ec;">
-                        <span id="pred-badge-dot" class="rounded-circle d-inline-block" style="width:10px;height:10px;"></span>
-                        <span id="pred-badge-text" style="color:#b3742e;"></span>
-                    </span>
-                    <span class="text-muted small" id="pred-score-label">Score: 0/6</span>
-                </div>
-
-                <div class="display-4 fw-bold mb-1" id="pred-porcentaje" style="color: var(--vita-text-dark);">0%</div>
-                <p class="text-secondary mb-3" id="pred-descripcion" style="font-size:0.95rem;">Probabilidad estimada</p>
-
-                <div class="progress" style="height: 6px; background: #f0f2f5; border-radius: 4px;">
-                    <div id="pred-bar" class="progress-bar" role="progressbar"
-                         style="width: 0%; background: #e6a23c; border-radius: 4px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                    </div>
-                </div>
-            </div>
-
-            <div id="pred-error" class="mt-3 d-none alert alert-danger py-2 small"></div>
-        </div>
-
-        <!-- Tarjeta: VARIABLES ANALIZADAS -->
-        <div id="card-variables" class="pred-card pred-vars-card d-none">
-            <div class="text-muted fw-semibold pred-vars-title">VARIABLES ANALIZADAS</div>
-            <div id="pred-variables-grid" class="pred-vars-grid"></div>
-            <div class="bg-light pred-vars-disclaimer">
-                <p class="text-muted mb-0">
-                    <i class="fa-solid fa-info-circle me-1"></i>
-                    Estimación del modelo; no sustituye criterio clínico.
-                </p>
+                <h5 class="fw-bold" style="color:var(--vita-jacarta);">Seleccioná un paciente</h5>
+                <p class="text-muted small mb-0">Buscá y seleccioná un paciente de la lista para ver su predicción de riesgo personalizada.</p>
             </div>
         </div>
 
+        <div id="pred-detalle" class="d-none">
+            <div class="row g-3">
+                <div class="col-lg-5">
+                    <div class="pred-card p-4 h-100">
+                        <div id="pred-paciente-info"></div>
+                        <div id="pred-donut-container"></div>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="pred-card p-4 mb-3">
+                        <h6 class="fw-bold mb-3" style="color:var(--vita-jacarta);"><i class="fa-solid fa-list-check me-2"></i>Factores Clave</h6>
+                        <div id="pred-factores" class="pred-factores"></div>
+                    </div>
+                    <div class="pred-card p-4">
+                        <h6 class="fw-bold mb-3" style="color:var(--vita-jacarta);"><i class="fa-solid fa-clipboard-list me-2"></i>Recomendaciones</h6>
+                        <ol id="pred-recs" class="mb-0 ps-3"></ol>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Fila inferior: métricas + heatmap -->
 <div class="row g-4 mt-2">
-    <div class="col-12 col-lg-5">
-        <div class="pred-card p-4 h-100">
-            <h5 class="fw-bold mb-4" style="color: var(--vita-jacarta);">
+    <div class="col-lg-5">
+        <div class="pred-card p-4">
+            <h5 class="fw-bold mb-3" style="color:var(--vita-jacarta);">
                 Rendimiento del Predictor
-                <button id="btn-retrain-model" class="btn btn-sm ms-3" style="background: var(--vita-wisteria); color: #fff; border: none; display: none;" onclick="retrainModel()">
+                <button id="btn-retrain-model" class="btn btn-sm ms-2" style="background:var(--vita-majorelle-blue);color:#fff;border:none;display:none;" onclick="retrainModel()">
                     <i class="fa-solid fa-rotate me-1"></i> Re-entrenar
                 </button>
             </h5>
-            <div id="ml-metrics-container" class="d-flex flex-column gap-3">
-                <div class="text-center py-5 text-muted">
-                    <i class="fa-solid fa-robot fa-3x mb-3" style="color: #6A4DD4;"></i>
-                    <p class="mb-0">Cargando métricas...</p>
-                </div>
-            </div>
+            <div id="ml-metrics-container"><div class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-1"></i> Cargando...</div></div>
         </div>
     </div>
-    <div class="col-12 col-lg-7">
-        <div class="pred-card p-4 h-100">
-            <h5 class="fw-bold mb-3" style="color: var(--vita-jacarta);">
-                Matriz de Confusión
-            </h5>
-            <div id="chart-heatmap">
-                <div class="text-center py-5 text-muted">
-                    <i class="fa-solid fa-chart-simple fa-3x mb-3" style="color: #6A4DD4;"></i>
-                    <p class="mb-0">Entrená el modelo para ver la matriz 2×2.</p>
-                </div>
-            </div>
+    <div class="col-lg-7">
+        <div class="pred-card p-4">
+            <h5 class="fw-bold mb-3" style="color:var(--vita-jacarta);">Matriz de Confusión</h5>
+            <div id="chart-heatmap"><div class="text-center py-4 text-muted"><p class="mb-0">Entrená el modelo para ver la matriz 2×2.</p></div></div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-    const navMl = document.getElementById('menu-ml');
-    if (navMl) navMl.classList.add('active');
+    document.getElementById('nav-ml')?.classList.add('active');
     document.getElementById('nav-ml-off')?.classList.add('active');
 
-    // Sincronizar sliders con labels
-    document.querySelectorAll('.form-range').forEach(slider => {
-        const valId = 'val-' + slider.id.replace('pred-', '');
-        const valEl = document.getElementById(valId);
-        if (valEl) {
-            slider.addEventListener('input', () => { valEl.textContent = slider.value; });
+    let todosPacientes = [];
+
+    function nivelColor(n) { return {critico:'#E53E3E', alto:'#ED8936', medio:'#ECC94B', normal:'#48BB78'}[n]||'#6c757d'; }
+    function nivelBadge(n) { const m={critico:'danger',alto:'warning',medio:'warning',normal:'success'}; return `<span class="badge bg-${m[n]||'secondary'}">${n}</span>`; }
+
+    document.addEventListener("DOMContentLoaded", async function() {
+        const token = localStorage.getItem('token_acceso');
+        if (!token) return;
+        await cargarPacientes(token);
+        await cargarMetricasML(token);
+
+        document.getElementById('search-paciente').addEventListener('input', function() {
+            const q = this.value.toLowerCase().trim();
+            document.querySelectorAll('.paciente-item').forEach(el => {
+                const txt = el.dataset.search || '';
+                el.style.display = txt.includes(q) ? '' : 'none';
+            });
+        });
+
+        const rol = localStorage.getItem('usuario_rol');
+        if (rol === 'ANALISTA' || rol === 'ADMIN') {
+            document.getElementById('btn-retrain-model').style.display = 'inline-block';
         }
     });
 
-    document.addEventListener("DOMContentLoaded", async function () {
+    async function cargarPacientes(token) {
+        try {
+            const res = await fetch('/api/etl/pacientes/?page_size=5000', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const json = await res.json();
+            todosPacientes = json.results || [];
+            const lista = document.getElementById('pacientes-lista');
+            if (todosPacientes.length === 0) {
+                lista.innerHTML = '<div class="text-center text-muted small py-4">No hay pacientes registrados.</div>';
+                return;
+            }
+            lista.innerHTML = todosPacientes.map(p => `
+                <div class="paciente-item" data-id="${p.id_paciente}" data-search="${(p.nombres+' '+p.apellidos+' '+p.id_paciente).toLowerCase()}" onclick="seleccionarPaciente(${p.id_paciente}, this)">
+                    <div class="fw-semibold small">${p.nombres} ${p.apellidos}</div>
+                    <small class="text-muted">ID ${p.id_paciente} · ${p.edad} años · ${p.sexo || '—'}</small>
+                </div>
+            `).join('');
+        } catch(e) {
+            document.getElementById('pacientes-lista').innerHTML = '<div class="text-center text-danger small py-4">Error al cargar pacientes.</div>';
+        }
+    }
+
+    let donutChartInstance = null;
+
+    async function seleccionarPaciente(id, el) {
+        document.querySelectorAll('.paciente-item').forEach(e => e.classList.remove('active'));
+        if (el) el.classList.add('active');
+
         const token = localStorage.getItem('token_acceso');
-        if (!token) return;
+        document.getElementById('pred-resultado').classList.add('d-none');
+        document.getElementById('pred-detalle').classList.remove('d-none');
+        document.getElementById('pred-paciente-info').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary mb-2"></div><p class="text-muted small">Analizando...</p></div>';
+        document.getElementById('pred-factores').innerHTML = '';
+        document.getElementById('pred-recs').innerHTML = '';
 
-        await cargarMetricasML(token);
+        try {
+            const res = await fetch(`/api/ml/predict/paciente/${id}/`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!res.ok) { document.getElementById('pred-paciente-info').innerHTML = `<div class="alert alert-danger">${data.error}</div>`; return; }
+            renderPrediccion(data);
+        } catch(e) {
+            document.getElementById('pred-paciente-info').innerHTML = '<div class="alert alert-danger">Error de conexión</div>';
+        }
+    }
 
-        document.getElementById('btn-predict').addEventListener('click', function () {
-            predecirRiesgo(token);
-        });
-    });
+    function renderPrediccion(data) {
+        const p = data.paciente;
+        const pred = data.prediccion;
+        const color = nivelColor(pred.riesgo.toLowerCase());
+        const descMap = {'Crítico':'Atención INMEDIATA requerida.','Alto':'Evaluación médica prioritaria.','Medio':'Monitoreo y seguimiento.','Bajo':'Bajo riesgo, mantener hábitos.'};
+
+        document.getElementById('pred-paciente-info').innerHTML = `
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white" style="width:44px;height:44px;background:${color};font-size:1.1rem;">${p.nombres.charAt(0)}${p.apellidos.charAt(0)}</div>
+                <div><h5 class="fw-bold mb-0">${p.nombres} ${p.apellidos}</h5><small class="text-muted">${p.edad} años · ${p.sexo||'—'}</small></div>
+            </div>
+            <div class="text-center py-3">
+                <span class="badge fs-5 fw-bold px-4 py-2 rounded-pill" style="background:${color};color:#fff;">${pred.riesgo}</span>
+                <div class="display-5 fw-bold mt-2" style="color:${color};">${pred.confianza}%</div>
+                <p class="text-muted small mt-2">${descMap[pred.riesgo]||''}</p>
+            </div>
+            <div id="pred-donut"></div>
+        `;
+
+        const factoresHtml = data.factores_clave.map(f => `
+            <div class="pred-factor">
+                <div class="pred-factor-dot" style="background:${nivelColor(f.nivel)}"></div>
+                <div class="flex-grow-1"><div class="fw-semibold small">${f.nombre}</div><small class="text-muted">${f.descripcion}</small></div>
+                <div class="text-end flex-shrink-0"><div class="fw-bold small" style="color:${nivelColor(f.nivel)}">${f.valor}</div>${nivelBadge(f.nivel)}</div>
+            </div>
+        `).join('');
+        document.getElementById('pred-factores').innerHTML = factoresHtml;
+
+        const recsHtml = data.recomendaciones.map(r => `<li class="small mb-1">${r}</li>`).join('');
+        document.getElementById('pred-recs').innerHTML = recsHtml;
+
+        const probs = pred.probabilidades;
+        const labels = Object.keys(probs).map(c => `Riesgo ${c}`);
+        const series = Object.values(probs);
+        const colors = Object.keys(probs).map(c => nivelColor(c.toLowerCase()));
+
+        if (donutChartInstance) { donutChartInstance.destroy(); donutChartInstance = null; }
+        if (typeof ApexCharts !== 'undefined') {
+            const opts = {
+                chart: { type: 'donut', height: 230 },
+                series, labels, colors,
+                legend: { position: 'bottom', fontSize: '11px' },
+                dataLabels: { enabled: true, formatter: v => v.toFixed(1)+'%' },
+                plotOptions: { pie: { donut: { size: '60%' } } },
+                tooltip: { y: { formatter: v => v.toFixed(2)+'%' } },
+            };
+            donutChartInstance = new ApexCharts(document.getElementById('pred-donut'), opts);
+            donutChartInstance.render();
+        }
+    }
 
     async function cargarMetricasML(token) {
         try {
-            const response = await fetch('/api/ml/model/metrics/', {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-
+            const res = await fetch('/api/ml/model/metrics/', { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
             const container = document.getElementById('ml-metrics-container');
-            const heatmapContainer = document.getElementById('chart-heatmap');
-
-            if (response.ok && data.modelo_entrenado) {
+            const heatmapEl = document.getElementById('chart-heatmap');
+            if (res.ok && data.modelo_entrenado) {
                 container.innerHTML = `
-                    <div class="d-flex justify-content-between border-bottom pb-2">
-                        <span class="text-muted">Exactitud (Accuracy)</span>
-                        <strong class="text-success" id="ml-accuracy">${data.accuracy}%</strong>
-                    </div>
-                    <div class="d-flex justify-content-between border-bottom pb-2">
-                        <span class="text-muted">Precisión (Precision)</span>
-                        <strong style="color: var(--vita-jacarta);">${data.precision}%</strong>
-                    </div>
-                    <div class="d-flex justify-content-between border-bottom pb-2">
-                        <span class="text-muted">Sensibilidad (Recall)</span>
-                        <strong style="color: var(--vita-jacarta);">${data.recall}%</strong>
-                    </div>
-                    <div class="d-flex justify-content-between pb-2">
-                        <span class="text-muted">Puntaje F1 (F1-Score)</span>
-                        <strong style="color: #6A4DD4;">${data.f1_score}%</strong>
-                    </div>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2"><span class="text-muted small">Exactitud (Accuracy)</span><strong class="text-success">${data.accuracy}%</strong></div>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2"><span class="text-muted small">Precisión (Precision)</span><strong>${data.precision}%</strong></div>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2"><span class="text-muted small">Sensibilidad (Recall)</span><strong>${data.recall}%</strong></div>
+                    <div class="d-flex justify-content-between"><span class="text-muted small">F1-Score</span><strong style="color:#6A4DD4;">${data.f1_score}%</strong></div>
                 `;
-
-                heatmapContainer.innerHTML = '';
-                const heatmapOptions = {
-                    chart: { type: 'heatmap', height: 280, toolbar: { show: false } },
-                    dataLabels: { enabled: true, style: { colors: ['#fff'] } },
-                    colors: ['#4b306b'],
-                    series: data.heatmap,
-                    xaxis: { type: 'category' }
-                };
-                const chart = new ApexCharts(heatmapContainer, heatmapOptions);
-                chart.render();
+                heatmapEl.innerHTML = '';
+                new ApexCharts(heatmapEl, { chart:{type:'heatmap',height:250,toolbar:{show:false}}, dataLabels:{enabled:true,style:{colors:['#fff']}}, colors:['#4b306b'], series:data.heatmap, xaxis:{type:'category'} }).render();
             } else {
-                container.innerHTML = `
-                    <div class="text-center py-5 text-muted">
-                        <i class="fa-solid fa-robot fa-3x mb-3" style="color: #6A4DD4;"></i>
-                        <p class="mb-0">Aún no se ha entrenado ningún modelo.</p>
-                        <small>Sube un dataset desde la sección ETL para entrenar el predictor automáticamente.</small>
-                    </div>
-                `;
+                container.innerHTML = '<div class="text-center py-4 text-muted"><p class="mb-0">No hay modelo entrenado.</p><small>Subí un dataset desde ETL primero.</small></div>';
             }
-        } catch (error) {
-            console.error("Error al cargar métricas de ML:", error);
-        }
-    }
-
-    async function predecirRiesgo(token) {
-        const campos = [
-            { id: 'pred-edad', nombre: 'Edad' },
-            { id: 'pred-imc', nombre: 'IMC' },
-            { id: 'pred-glucosa', nombre: 'Glucosa' },
-            { id: 'pred-colesterol', nombre: 'Colesterol' },
-            { id: 'pred-sistolica', nombre: 'Presión Sistólica' },
-            { id: 'pred-fc', nombre: 'Frecuencia Cardíaca' }
-        ];
-        for (const campo of campos) {
-            const el = document.getElementById(campo.id);
-            if (!el.value || el.value.trim() === '') {
-                document.getElementById('pred-error').textContent = `Campo requerido: ${campo.nombre}`;
-                document.getElementById('pred-error').classList.remove('d-none');
-                return;
-            }
-        }
-        const edad = document.getElementById('pred-edad').value;
-        const imc = document.getElementById('pred-imc').value;
-        const glucosa = document.getElementById('pred-glucosa').value;
-        const colesterol = document.getElementById('pred-colesterol').value;
-        const sistolica = document.getElementById('pred-sistolica').value;
-        const fc = document.getElementById('pred-fc').value;
-        const fumador = document.getElementById('pred-fumador').checked ? '1' : '0';
-
-        const btn = document.getElementById('btn-predict');
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Analizando...`;
-
-        document.getElementById('pred-contenido').classList.add('d-none');
-        document.getElementById('pred-empty').classList.remove('d-none');
-        const cardVars = document.getElementById('card-variables');
-        cardVars.classList.add('d-none');
-        document.getElementById('pred-error').classList.add('d-none');
-
-        try {
-            const response = await fetch('/api/ml/predict/', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    edad: parseFloat(edad),
-                    imc: parseFloat(imc),
-                    glucosa: parseFloat(glucosa),
-                    colesterol: parseFloat(colesterol),
-                    presion_sistolica: parseFloat(sistolica),
-                    frecuencia_cardiaca: parseFloat(fc),
-                    fumador: fumador
-                })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                const probEnfermo = data.probabilidad_enfermo;
-
-                document.getElementById('pred-empty').classList.add('d-none');
-                document.getElementById('pred-contenido').classList.remove('d-none');
-                const cardVars = document.getElementById('card-variables');
-                cardVars.classList.remove('d-none');
-
-                // Score (basado en 6 criterios clínicos)
-                let score = 0;
-                if (parseFloat(glucosa) > 100) score++;
-                if (parseFloat(colesterol) > 200) score++;
-                if (parseFloat(imc) >= 25) score++;
-                if (parseFloat(sistolica) > 130) score++;
-                if (parseFloat(fc) > 90) score++;
-                if (parseFloat(edad) > 50) score++;
-                document.getElementById('pred-score-label').textContent = `Score: ${score}/6`;
-
-                // Nivel de riesgo según score
-                let nivel, dotColor, badgeBg, badgeTextColor, barColor, borderColor, cardBorder, descripcion, pct;
-                if (score <= 2) {
-                    nivel = 'Riesgo Bajo';
-                    dotColor = '#48BB78';
-                    badgeBg = '#e6f7e6';
-                    badgeTextColor = '#2f855a';
-                    barColor = '#48BB78';
-                    borderColor = '#48BB78';
-                    pct = (100 - probEnfermo).toFixed(1);
-                    descripcion = 'Probabilidad estimada de estado saludable';
-                } else if (score <= 4) {
-                    nivel = 'Riesgo Moderado';
-                    dotColor = '#6A4DD4';
-                    badgeBg = '#EDE8FB';
-                    badgeTextColor = '#000229';
-                    barColor = '#6A4DD4';
-                    borderColor = '#6A4DD4';
-                    pct = probEnfermo.toFixed(1);
-                    descripcion = 'Probabilidad estimada de evento cardiovascular';
-                } else {
-                    nivel = 'Riesgo Alto';
-                    dotColor = '#E53E3E';
-                    badgeBg = '#fde8e8';
-                    badgeTextColor = '#c53030';
-                    barColor = '#E53E3E';
-                    borderColor = '#E53E3E';
-                    pct = probEnfermo.toFixed(1);
-                    descripcion = 'Alta probabilidad de evento cardiovascular';
-                }
-
-                // Badge
-                document.getElementById('pred-badge-dot').style.background = dotColor;
-                const badgeText = document.getElementById('pred-badge-text');
-                badgeText.textContent = nivel;
-                badgeText.style.color = badgeTextColor;
-                const badge = document.getElementById('pred-badge');
-                badge.style.background = badgeBg;
-
-                // Card border
-                document.getElementById('card-resultado').style.borderColor = borderColor;
-
-                // Porcentaje
-                document.getElementById('pred-porcentaje').textContent = `${pct}%`;
-                document.getElementById('pred-porcentaje').style.color = dotColor;
-
-                // Descripción
-                document.getElementById('pred-descripcion').textContent = descripcion;
-
-                // Barra de progreso
-                const bar = document.getElementById('pred-bar');
-                bar.style.width = `${pct}%`;
-                bar.style.background = barColor;
-                bar.setAttribute('aria-valuenow', pct);
-
-                // Variables analizadas grid
-                const vars = [
-                    { label: 'Edad', value: `${edad} años` },
-                    { label: 'IMC', value: `${imc} kg/m²` },
-                    { label: 'Glucosa', value: `${glucosa} mg/dL` },
-                    { label: 'Colesterol', value: `${colesterol} mg/dL` },
-                    { label: 'Presión Sistólica', value: `${sistolica} mmHg` },
-                    { label: 'Frecuencia Cardíaca', value: `${fc} lpm` },
-                    { label: 'Fumador', value: fumador === '1' ? 'Sí' : 'No' }
-                ];
-                const grid = document.getElementById('pred-variables-grid');
-                grid.innerHTML = vars.map(v => `
-                    <div class="pred-var-item">
-                        <span class="pred-var-label">${v.label}</span>
-                        <span class="pred-var-value">${v.value}</span>
-                    </div>
-                `).join('');
-            } else {
-                document.getElementById('pred-empty').classList.add('d-none');
-                const errorDiv = document.getElementById('pred-error');
-                errorDiv.textContent = data.error || 'Error al realizar la predicción.';
-                errorDiv.classList.remove('d-none');
-            }
-        } catch (error) {
-            console.error("Error en predicción:", error);
-            document.getElementById('pred-empty').classList.add('d-none');
-            const errorDiv = document.getElementById('pred-error');
-            errorDiv.textContent = 'Error de conexión con el servidor.';
-            errorDiv.classList.remove('d-none');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-sparkles me-2"></i> Ejecutar predicción`;
-        }
-    }
-
-    // Mostrar botón de re-entrenamiento si el rol lo permite
-    const userRole = localStorage.getItem('usuario_rol');
-    if (userRole === 'ANALISTA' || userRole === 'ADMIN') {
-        const retrainBtn = document.getElementById('btn-retrain-model');
-        if (retrainBtn) retrainBtn.style.display = 'inline-block';
+        } catch(e) { console.error(e); }
     }
 
     async function retrainModel() {
         const btn = document.getElementById('btn-retrain-model');
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Re-entrenando...`;
-
+        btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Re-entrenando...';
         const token = localStorage.getItem('token_acceso');
         try {
-            const response = await fetch('/api/ml/train/', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            if (response.ok) {
-                alert('Modelo re-entrenado exitosamente.');
-                await cargarMetricasML(token);
-            } else {
-                alert(data.error || 'Error al re-entrenar el modelo.');
-            }
-        } catch (error) {
-            alert('Error de conexión al re-entrenar.');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-rotate me-1"></i> Re-entrenar`;
-        }
+            const res = await fetch('/api/ml/train/', { method:'POST', headers:{'Authorization':`Bearer ${token}`} });
+            const data = await res.json();
+            if (res.ok) { await cargarMetricasML(token); } else { alert(data.error||'Error'); }
+        } catch(e) { alert('Error de conexión'); }
+        finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-rotate me-1"></i> Re-entrenar'; }
     }
 </script>
 {% endblock %}

@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from apps.etl.models import MetricasModeloML
+from apps.etl.models import MetricasModeloML, Paciente
 from apps.machine_learning.services import PredictorRiesgoService
 
 
@@ -119,3 +119,17 @@ class PrediccionRiesgoView(APIView):
             "probabilidad_sano": round(float(probabilidad[0] * 100), 2),
             "probabilidad_enfermo": round(float(probabilidad[1] * 100), 2),
         }, status=status.HTTP_200_OK)
+
+
+class PrediccionPacienteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, paciente_id, format=None):
+        try:
+            predictor = PredictorRiesgoService()
+            resultado = predictor.predecir_paciente(paciente_id)
+            return Response(resultado, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Error al predecir: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

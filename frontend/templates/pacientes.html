@@ -271,6 +271,25 @@
     </div>
 </div>
 
+<!-- Modal Predicción -->
+<div class="modal fade" id="modalPrediccion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow" style="border-radius: 20px;">
+            <div class="modal-header border-0" style="background: var(--vita-indigo-dark); color: #fff; border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-brain me-2"></i> Predicción de Riesgo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="prediccion-body">
+                <div class="text-center py-5" id="pred-loading">
+                    <div class="spinner-border text-primary mb-3" style="width:3rem;height:3rem;" role="status"></div>
+                    <p class="text-muted">Analizando paciente...</p>
+                </div>
+                <div id="pred-content" class="d-none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.getElementById('nav-pacientes')?.classList.add('active');
     document.getElementById('nav-pacientes-off')?.classList.add('active');
@@ -299,9 +318,9 @@
 
         if (esAdmin) {
             document.getElementById('btn-nuevo-paciente').style.display = 'inline-block';
-            document.getElementById('th-acciones').classList.remove('d-none');
-            document.getElementById('th-acciones-sub').classList.remove('d-none');
         }
+        document.getElementById('th-acciones').classList.remove('d-none');
+        document.getElementById('th-acciones-sub').classList.remove('d-none');
 
         try {
             const response = await fetch('/api/etl/pacientes/?page_size=5000', {
@@ -507,14 +526,151 @@
                     <span class="badge badge-riesgo ${riesgoClase}">${riesgoLabel}</span>
                 </td>
                 <td class="text-center" style="font-size:0.72rem; white-space:nowrap;">${fmtFecha(p.fecha_consulta)}</td>
-                ${esAdmin ? `
-                <td class="text-center sticky-col-actions">
+                <td class="text-center sticky-col-actions" style="white-space:nowrap;">
+                    <button class="btn btn-sm btn-outline-primary border-0 me-1" onclick="abrirPrediccion(${p.id_paciente})" title="Ver Predicción"><i class="fa-solid fa-brain"></i></button>
+                    ${esAdmin ? `
                     <button class="btn btn-sm btn-outline-secondary border-0 me-1" onclick="abrirModalEditar(${p.id_paciente})" title="Editar"><i class="fa-solid fa-pen"></i></button>
-                    <button class="btn btn-sm btn-outline-secondary border-0" onclick="eliminarPaciente(${p.id_paciente})" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
-                </td>` : ''}
+                    <button class="btn btn-sm btn-outline-secondary border-0" onclick="eliminarPaciente(${p.id_paciente})" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                </td>`
             `;
             tbody.appendChild(tr);
         });
+    }
+
+    // ── Predicción por Paciente ────────────────────────────
+    function nivelColor(nivel) {
+        return {critico:'#E53E3E', alto:'#ED8936', medio:'#ECC94B', normal:'#48BB78'}[nivel] || '#6c757d';
+    }
+    function nivelBadge(nivel) {
+        const map = {critico:'danger', alto:'warning', medio:'warning', normal:'success'};
+        return `<span class="badge bg-${map[nivel] || 'secondary'}">${nivel}</span>`;
+    }
+
+    async function abrirPrediccion(id) {
+        const modal = new bootstrap.Modal('#modalPrediccion');
+        modal.show();
+        document.getElementById('pred-loading').classList.remove('d-none');
+        document.getElementById('pred-content').classList.add('d-none');
+
+        const token = localStorage.getItem('token_acceso');
+        try {
+            const res = await fetch(`/api/ml/predict/paciente/${id}/`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                document.getElementById('pred-loading').classList.add('d-none');
+                document.getElementById('pred-content').innerHTML = `<div class="alert alert-danger">${data.error || 'Error al obtener predicción'}</div>`;
+                document.getElementById('pred-content').classList.remove('d-none');
+                return;
+            }
+            renderPrediccion(data);
+        } catch (e) {
+            document.getElementById('pred-loading').classList.add('d-none');
+            document.getElementById('pred-content').innerHTML = `<div class="alert alert-danger">Error de conexión</div>`;
+            document.getElementById('pred-content').classList.remove('d-none');
+        }
+    }
+
+    function renderPrediccion(data) {
+        document.getElementById('pred-loading').classList.add('d-none');
+        const p = data.paciente;
+        const pred = data.prediccion;
+        const riesgoColor = nivelColor(pred.riesgo.toLowerCase());
+        const confianza = pred.confianza;
+        const probs = pred.probabilidades;
+        const clases = Object.keys(probs);
+        const valores = Object.values(probs);
+
+        let donutHtml = '';
+        if (typeof ApexCharts !== 'undefined') {
+            donutHtml = `<div id="pred-donut-chart"></div>`;
+        }
+
+        const factoresHtml = data.factores_clave.map(f => `
+            <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f8f9fb;">
+                <div style="width:6px;height:6px;border-radius:50%;background:${nivelColor(f.nivel)};flex-shrink:0;"></div>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold small">${f.nombre}</div>
+                    <small class="text-muted">${f.descripcion}</small>
+                </div>
+                <div class="text-end flex-shrink-0">
+                    <div class="fw-bold small" style="color:${nivelColor(f.nivel)}">${f.valor}</div>
+                    ${nivelBadge(f.nivel)}
+                </div>
+            </div>
+        `).join('');
+
+        const recsHtml = data.recomendaciones.map(r => `<li class="small mb-1">${r}</li>`).join('');
+
+        const descripcionMap = {
+            'Crítico': 'El paciente presenta valores clínicos críticos que requieren atención médica INMEDIATA. Algunos indicadores ponen en riesgo su vida.',
+            'Alto': 'El paciente presenta múltiples factores de riesgo elevados. Se recomienda evaluación médica prioritaria.',
+            'Medio': 'El paciente presenta algunos factores de riesgo moderados. Monitoreo y seguimiento recomendado.',
+            'Bajo': 'El paciente presenta bajo riesgo clínico. Mantener hábitos saludables y chequeos preventivos.',
+        };
+
+        document.getElementById('pred-content').innerHTML = `
+            <div class="row g-4">
+                <!-- Columna izquierda: info paciente + donut -->
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white" style="width:48px;height:48px;background:${riesgoColor};font-size:1.2rem;">
+                                    ${p.nombres.charAt(0)}${p.apellidos.charAt(0)}
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-0">${p.nombres} ${p.apellidos}</h5>
+                                    <small class="text-muted">${p.edad} años · ${p.sexo || '—'}</small>
+                                </div>
+                            </div>
+                            <div class="text-center py-3">
+                                <span class="badge fs-5 fw-bold px-4 py-2 rounded-pill" style="background:${riesgoColor};color:#fff;">
+                                    ${pred.riesgo}
+                                </span>
+                                <div class="display-5 fw-bold mt-2" style="color:${riesgoColor};">${confianza}%</div>
+                                <p class="text-muted small mt-2">${descripcionMap[pred.riesgo] || ''}</p>
+                            </div>
+                            ${donutHtml}
+                        </div>
+                    </div>
+                </div>
+                <!-- Columna derecha: factores + recomendaciones -->
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-3" style="color:var(--vita-jacarta);"><i class="fa-solid fa-list-check me-2"></i>Factores Clave</h6>
+                            <div class="d-flex flex-column gap-2">${factoresHtml}</div>
+                        </div>
+                    </div>
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-3" style="color:var(--vita-jacarta);"><i class="fa-solid fa-clipboard-list me-2"></i>Recomendaciones</h6>
+                            <ol class="mb-0 ps-3">${recsHtml}</ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.getElementById('pred-content').classList.remove('d-none');
+
+        // Render donut chart
+        if (typeof ApexCharts !== 'undefined') {
+            const donutColors = clases.map(c => nivelColor(c.toLowerCase()));
+            const options = {
+                chart: { type: 'donut', height: 250 },
+                series: valores,
+                labels: clases.map(c => `Riesgo ${c}`),
+                colors: donutColors,
+                legend: { position: 'bottom', fontSize: '12px' },
+                dataLabels: { enabled: true, formatter: function(v) { return v.toFixed(1) + '%'; } },
+                tooltip: { y: { formatter: function(v) { return v.toFixed(2) + '%'; } } },
+                plotOptions: { pie: { donut: { size: '60%' } } },
+            };
+            const chart = new ApexCharts(document.getElementById('pred-donut-chart'), options);
+            chart.render();
+        }
     }
 
     // ── CRUD Pacientes ──────────────────────────────────────
