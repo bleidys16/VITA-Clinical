@@ -16,8 +16,29 @@
     .badge-riesgo.medio { background-color: #fff3cd; color: #856404; }
     .badge-riesgo.alto { background-color: #ffe5d0; color: #a84c00; }
     .badge-riesgo.critico { background-color: #f8d7da; color: #721c24; }
+    .badge-imc { font-size: 0.65rem; padding: 1px 6px; font-weight: 500; }
+    .badge-imc.bajo-peso { background-color: #cff4fc; color: #055160; }
+    .badge-imc.normal { background-color: #d1e7dd; color: #0a3622; }
+    .badge-imc.sobrepeso { background-color: #fff3cd; color: #664d03; }
+    .badge-imc.obesidad { background-color: #f8d7da; color: #58151c; }
     .paciente-row { transition: background-color 0.15s ease-in-out; }
-    .table-vitals { font-size: 0.75rem; color: #495057; line-height: 1.6; }
+    .th-group { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; border: none; }
+    .th-group.paciente { background: #3F2A52; color: #fff; }
+    .th-group.demografia { background: #4a6fa5; color: #fff; }
+    .th-group.antropometria { background: #6f42c1; color: #fff; }
+    .th-group.signos-vitales { background: #0d6efd; color: #fff; }
+    .th-group.estilo-vida { background: #198754; color: #fff; }
+    .th-group.diagnostico { background: #fd7e14; color: #fff; }
+    .th-group.acciones { background: #6c757d; color: #fff; }
+    .th-sub { font-size: 0.7rem; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; white-space: nowrap; }
+    .table-cell-group { font-size: 0.75rem; color: #212529; line-height: 1.6; }
+    .cell-label { color: #6c757d; font-size: 0.65rem; }
+    .sticky-col-left { position: sticky; left: 0; z-index: 3; background: #fff; }
+    .sticky-col-name { position: sticky; left: 40px; z-index: 3; background: #fff; }
+    .sticky-col-actions { position: sticky; right: 0; z-index: 3; background: #fff; }
+    .table-responsive { overflow-x: auto; }
+    .table th.sticky-col-left, .table th.sticky-col-name, .table th.sticky-col-actions { z-index: 4; }
+    .table-group-divider { border-left: 2px solid #e9ecef; }
 </style>
 
 <div class="row mb-4">
@@ -97,21 +118,45 @@
         <div id="header-contador"></div>
     </div>
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0" id="tabla-pacientes" style="font-size: 0.85rem;">
-            <thead class="table-light sticky-top">
+        <table class="table table-hover align-middle mb-0" id="tabla-pacientes" style="font-size: 0.8rem;">
+            <thead class="sticky-top">
                 <tr>
-                    <th style="width: 4%;">#</th>
-                    <th style="width: 22%;">Paciente</th>
-                    <th style="width: 8%;">Edad/Sexo</th>
-                    <th style="width: 7%;">IMC</th>
-                    <th style="width: 33%;">Signos Vitales</th>
-                    <th style="width: 18%;" class="text-center">Riesgo</th>
-                    <th id="th-acciones" style="width: 8%;" class="text-center d-none"></th>
+                    <th class="th-group paciente sticky-col-left" colspan="2" style="width: 14%;">Paciente</th>
+                    <th class="th-group demografia" colspan="2" style="width: 8%;">Demografía</th>
+                    <th class="th-group antropometria" colspan="3" style="width: 12%;">Antropometría</th>
+                    <th class="th-group signos-vitales" colspan="7" style="width: 28%;">Signos Vitales</th>
+                    <th class="th-group estilo-vida" colspan="4" style="width: 14%;">Estilo de Vida</th>
+                    <th class="th-group diagnostico" colspan="3" style="width: 16%;">Diagnóstico</th>
+                    <th id="th-acciones" class="th-group acciones sticky-col-actions d-none text-center" style="width: 6%;">Acciones</th>
+                </tr>
+                <tr>
+                    <th class="th-sub sticky-col-left text-center">#</th>
+                    <th class="th-sub sticky-col-name">Nombre</th>
+                    <th class="th-sub text-center">Edad</th>
+                    <th class="th-sub text-center">Sexo</th>
+                    <th class="th-sub text-center">Peso</th>
+                    <th class="th-sub text-center">Altura</th>
+                    <th class="th-sub text-center">IMC</th>
+                    <th class="th-sub text-center">PA Sist</th>
+                    <th class="th-sub text-center">PA Diast</th>
+                    <th class="th-sub text-center">FC</th>
+                    <th class="th-sub text-center">Glu</th>
+                    <th class="th-sub text-center">Col</th>
+                    <th class="th-sub text-center">SpO₂</th>
+                    <th class="th-sub text-center">Temp</th>
+                    <th class="th-sub text-center">Fum</th>
+                    <th class="th-sub text-center">Alc</th>
+                    <th class="th-sub text-center">Act. Fís</th>
+                    <th class="th-sub text-center">Antec</th>
+                    <th class="th-sub">Diagnóstico</th>
+                    <th class="th-sub text-center">Riesgo</th>
+                    <th class="th-sub text-center">Fecha</th>
+                    <th id="th-acciones-sub" class="th-sub sticky-col-actions d-none text-center"><i class="fa-solid fa-gear"></i></th>
                 </tr>
             </thead>
             <tbody id="tabla-pacientes-body">
                 <tr id="loading-row">
-                    <td colspan="7" class="text-center py-4 text-muted">
+                    <td colspan="22" class="text-center py-4 text-muted">
                         <i class="fa-solid fa-circle-notch fa-spin me-2"></i> Cargando registros clínicos...
                     </td>
                 </tr>
@@ -197,26 +242,32 @@
                             <label class="form-label small fw-bold">Diagnóstico Preliminar</label>
                             <input class="form-control" id="p-diagnostico">
                         </div>
-                        <div class="col-12">
-                            <div class="row">
-                                <div class="col-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="p-fumador">
-                                        <label class="form-check-label small">Fumador</label>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="p-alcohol">
-                                        <label class="form-check-label small">Consumo Alcohol</label>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="p-antecedentes">
-                                        <label class="form-check-label small">Antec. Familiares</label>
-                                    </div>
-                                </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Actividad Física</label>
+                            <select class="form-select" id="p-actividad-fisica">
+                                <option value="">Seleccionar</option>
+                                <option value="Sedentario">Sedentario</option>
+                                <option value="Ligera">Ligera</option>
+                                <option value="Moderada">Moderada</option>
+                                <option value="Intensa">Intensa</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Fecha Consulta</label>
+                            <input type="date" class="form-control" id="p-fecha-consulta">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end gap-3 pb-1">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="p-fumador">
+                                <label class="form-check-label small">Fumador</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="p-alcohol">
+                                <label class="form-check-label small">Alcohol</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="p-antecedentes">
+                                <label class="form-check-label small">Antec. Familiares</label>
                             </div>
                         </div>
                     </div>
@@ -263,6 +314,7 @@
         if (esAdmin) {
             document.getElementById('btn-nuevo-paciente').style.display = 'inline-block';
             document.getElementById('th-acciones').classList.remove('d-none');
+            document.getElementById('th-acciones-sub').classList.remove('d-none');
         }
         if (esMedico) {
             document.getElementById('btn-excel').style.display = 'none';
@@ -282,7 +334,7 @@
                 renderizarPagina();
             } else {
                 document.getElementById('tabla-pacientes-body').innerHTML = `
-                    <tr><td colspan="7" class="text-center text-danger py-4">Error al cargar los datos.</td></tr>
+                    <tr><td colspan="22" class="text-center text-danger py-4">Error al cargar los datos.</td></tr>
                 `;
             }
         } catch (error) {
@@ -402,9 +454,24 @@
         renderizarPagina();
     }
 
+    function boolIcon(val) {
+        return val ? '<i class="fa-solid fa-check text-success"></i>' : '<i class="fa-solid fa-xmark text-muted"></i>';
+    }
+
+    function imcBadge(clasif) {
+        const cls = imcClass(clasif);
+        return `<span class="badge badge-imc ${cls}">${clasif || '—'}</span>`;
+    }
+
+    function fmtFecha(f) {
+        if (!f) return '—';
+        try { const d = new Date(f); return d.toLocaleDateString('es-ES', {day:'2-digit',month:'2-digit',year:'numeric'}); }
+        catch(e) { return f; }
+    }
+
     function renderizarTabla(pacientes, total) {
         const tbody = document.getElementById('tabla-pacientes-body');
-        const cols = esAdmin ? 7 : 6;
+        const cols = esAdmin ? 22 : 21;
         if (pacientes.length === 0) {
             const msg = todosLosPacientes.length === 0
                 ? 'No hay pacientes registrados. Cargá un dataset desde ETL.'
@@ -422,33 +489,44 @@
             const imcVal = p.imc ? p.imc.toFixed(1) : '—';
             const riesgoClase = riesgoClass(p.riesgo_enfermedad);
             const riesgoLabel = p.riesgo_enfermedad || '—';
-            const diag = p.diagnostico_preliminar || '';
+            const pesoVal = p.peso != null ? p.peso + ' kg' : '—';
+            const alturaVal = p.altura != null ? p.altura + ' m' : '—';
+            const imcClasif = p.clasificacion_imc || '';
 
             const tr = document.createElement('tr');
             tr.className = 'paciente-row';
             tr.innerHTML = `
-                <td class="text-muted" style="font-size:0.78rem;">${num}</td>
-                <td>
-                    <div class="fw-semibold text-dark" style="font-size:0.85rem;">${p.nombres} ${p.apellidos}</div>
-                    ${diag ? `<small class="text-muted" style="font-size: 0.72rem;">${diag}</small>` : ''}
+                <td class="text-muted text-center sticky-col-left" style="font-size:0.72rem;">${num}</td>
+                <td class="sticky-col-name">
+                    <div class="fw-semibold text-dark" style="font-size:0.8rem;">${p.nombres} ${p.apellidos}</div>
+                    ${p.diagnostico_preliminar ? `<small class="text-muted" style="font-size: 0.65rem;">${p.diagnostico_preliminar}</small>` : ''}
                 </td>
-                <td class="text-muted" style="font-size: 0.83rem;">${p.edad} · ${p.sexo ? p.sexo[0] : '—'}</td>
-                <td>
-                    <span class="fw-semibold" style="font-size: 0.85rem;">${imcVal}</span>
+                <td class="text-center">${p.edad ?? '—'}</td>
+                <td class="text-center">${p.sexo || '—'}</td>
+                <td class="text-center">${pesoVal}</td>
+                <td class="text-center">${alturaVal}</td>
+                <td class="text-center">
+                    <span class="fw-semibold" style="font-size:0.78rem;">${imcVal}</span>
+                    ${imcClasif ? '<br>' + imcBadge(imcClasif) : ''}
                 </td>
-                <td>
-                    <div class="table-vitals" style="font-size:0.75rem;line-height:1.6;">
-                        <span>PA: ${p.presion_sistolica || '—'}/${p.presion_diastolica || '—'} mmHg</span>
-                        <span>GLU: ${p.glucosa || '—'} mg/dL</span>
-                        <span>SpO₂: ${p.saturacion_oxigeno || '—'}%</span>
-                        <span>T°: ${p.temperatura || '—'}°C</span>
-                    </div>
-                </td>
+                <td class="text-center">${p.presion_sistolica ?? '—'}</td>
+                <td class="text-center">${p.presion_diastolica ?? '—'}</td>
+                <td class="text-center">${p.frecuencia_cardiaca ?? '—'}</td>
+                <td class="text-center">${p.glucosa ?? '—'}</td>
+                <td class="text-center">${p.colesterol ?? '—'}</td>
+                <td class="text-center">${p.saturacion_oxigeno ?? '—'}</td>
+                <td class="text-center">${p.temperatura ?? '—'}</td>
+                <td class="text-center">${boolIcon(p.fumador)}</td>
+                <td class="text-center">${boolIcon(p.consumo_alcohol)}</td>
+                <td class="text-center" style="font-size:0.72rem;">${p.actividad_fisica || '—'}</td>
+                <td class="text-center">${boolIcon(p.antecedentes_familiares)}</td>
+                <td style="font-size:0.72rem;">${p.diagnostico_preliminar || '—'}</td>
                 <td class="text-center">
                     <span class="badge badge-riesgo ${riesgoClase}">${riesgoLabel}</span>
                 </td>
+                <td class="text-center" style="font-size:0.72rem; white-space:nowrap;">${fmtFecha(p.fecha_consulta)}</td>
                 ${esAdmin ? `
-                <td class="text-center">
+                <td class="text-center sticky-col-actions">
                     <button class="btn btn-sm btn-outline-secondary border-0 me-1" onclick="abrirModalEditar(${p.id_paciente})" title="Editar"><i class="fa-solid fa-pen"></i></button>
                     <button class="btn btn-sm btn-outline-secondary border-0" onclick="eliminarPaciente(${p.id_paciente})" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
                 </td>` : ''}
@@ -516,6 +594,8 @@
         document.getElementById('p-fumador').checked = !!p.fumador;
         document.getElementById('p-alcohol').checked = !!p.consumo_alcohol;
         document.getElementById('p-antecedentes').checked = !!p.antecedentes_familiares;
+        document.getElementById('p-actividad-fisica').value = p.actividad_fisica || '';
+        document.getElementById('p-fecha-consulta').value = p.fecha_consulta || '';
         new bootstrap.Modal('#modalPaciente').show();
     }
 
@@ -542,6 +622,8 @@
             fumador: document.getElementById('p-fumador').checked,
             consumo_alcohol: document.getElementById('p-alcohol').checked,
             antecedentes_familiares: document.getElementById('p-antecedentes').checked,
+            actividad_fisica: document.getElementById('p-actividad-fisica').value || '',
+            fecha_consulta: document.getElementById('p-fecha-consulta').value || null,
         };
 
         const btn = document.getElementById('btn-guardar-paciente');

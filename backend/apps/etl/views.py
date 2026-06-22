@@ -149,20 +149,26 @@ class PacienteListView(APIView):
                 "apellidos": p.apellidos,
                 "edad": p.edad,
                 "sexo": p.sexo,
+                "peso": p.peso,
+                "altura": p.altura,
                 "imc": imc,
                 "clasificacion_imc": clas_imc,
                 "color_imc": color_imc,
                 "presion_sistolica": p.presion_sistolica,
                 "presion_diastolica": p.presion_diastolica,
+                "frecuencia_cardiaca": p.frecuencia_cardiaca,
                 "glucosa": p.glucosa,
+                "colesterol": p.colesterol,
                 "saturacion_oxigeno": p.saturacion_oxigeno,
                 "temperatura": p.temperatura,
                 "fumador": p.fumador,
                 "consumo_alcohol": p.consumo_alcohol,
                 "antecedentes_familiares": p.antecedentes_familiares,
+                "actividad_fisica": p.actividad_fisica,
                 "diagnostico_preliminar": p.diagnostico_preliminar,
                 "riesgo_enfermedad": riesgo,
                 "color_riesgo": color_riesgo,
+                "fecha_consulta": p.fecha_consulta,
             })
         return Response({
             "total": total,
@@ -454,6 +460,7 @@ class ReportesView(APIView):
                 'Antecedentes_Familiares': p.antecedentes_familiares,
                 'Fumador': p.fumador,
                 'Consumo_Alcohol': p.consumo_alcohol,
+                'Actividad_Fisica': p.actividad_fisica,
                 'Diagnostico': p.diagnostico_preliminar,
                 'Riesgo': p.riesgo_enfermedad,
                 'Fecha_Consulta': p.fecha_consulta,
@@ -484,7 +491,7 @@ class ReportesView(APIView):
             return response
         elif formato == 'pdf':
             try:
-                from reportlab.lib.pagesizes import letter
+                from reportlab.lib.pagesizes import letter, landscape
                 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
                 from reportlab.lib.units import inch
                 from reportlab.lib.colors import HexColor
@@ -493,78 +500,111 @@ class ReportesView(APIView):
 
                 output = io.BytesIO()
                 doc = SimpleDocTemplate(
-                    output, pagesize=letter,
-                    rightMargin=72, leftMargin=72,
-                    topMargin=72, bottomMargin=72,
+                    output, pagesize=landscape(letter),
+                    rightMargin=36, leftMargin=36,
+                    topMargin=48, bottomMargin=48,
                 )
 
                 styles = getSampleStyleSheet()
                 title_style = ParagraphStyle(
                     'CustomTitle', parent=styles['Title'],
-                    fontName='Helvetica-Bold', fontSize=18,
+                    fontName='Helvetica-Bold', fontSize=16,
                     textColor=HexColor('#3F2A52'),
-                    spaceAfter=6,
+                    spaceAfter=4,
                 )
                 subtitle_style = ParagraphStyle(
                     'Subtitle', parent=styles['Normal'],
-                    fontSize=10, textColor=HexColor('#75619D'),
-                    spaceAfter=20,
+                    fontSize=9, textColor=HexColor('#75619D'),
+                    spaceAfter=14,
                 )
-                normal_style = ParagraphStyle(
-                    'CustomNormal', parent=styles['Normal'],
-                    fontSize=8,
+                cell_style = ParagraphStyle(
+                    'CellStyle', parent=styles['Normal'],
+                    fontSize=6.5, leading=8,
+                    alignment=1,
+                )
+                cell_left = ParagraphStyle(
+                    'CellLeft', parent=styles['Normal'],
+                    fontSize=6.5, leading=8,
+                    alignment=0,
                 )
 
                 elements = []
-                elements.append(Paragraph("VITA Clinical", title_style))
-                elements.append(Paragraph("Vital Tracking in Healthcare Analytics - Reporte de Pacientes", subtitle_style))
-                elements.append(Spacer(1, 0.2 * inch))
+                elements.append(Paragraph("VITA Clinical &mdash; Reporte Completo de Pacientes", title_style))
+                elements.append(Spacer(1, 0.1 * inch))
 
                 kpi_data = DashboardKPIs.objects.first()
                 if kpi_data:
                     kpi_text = (
-                        f"Total Registros: {kpi_data.total_registros} | "
-                        f"Pacientes Críticos: {kpi_data.pacientes_criticos} | "
-                        f"Edad Promedio: {round(kpi_data.edad_media, 1)} | "
-                        f"Riesgo Promedio: {round(kpi_data.riesgo_promedio, 1)}%"
+                        f"<b>Total:</b> {kpi_data.total_registros}  |  "
+                        f"<b>Críticos:</b> {kpi_data.pacientes_criticos}  |  "
+                        f"<b>Edad Prom. :</b> {round(kpi_data.edad_media, 1)}  |  "
+                        f"<b>Riesgo Prom.:</b> {round(kpi_data.riesgo_promedio, 1)}%"
                     )
                     elements.append(Paragraph(kpi_text, subtitle_style))
-                    elements.append(Spacer(1, 0.2 * inch))
+                    elements.append(Spacer(1, 0.1 * inch))
 
-                table_data = [[
-                    'ID', 'Paciente', 'Edad', 'Sexo', 'IMC', 'PA Sys',
-                    'Glucosa', 'SatO2', 'Riesgo'
-                ]]
+                def fmt(v, dec=1):
+                    if v is None or v == '':
+                        return '—'
+                    if isinstance(v, float):
+                        return f"{v:.{dec}f}"
+                    return str(v)
+
+                def fmtBool(v):
+                    return 'Sí' if v else 'No'
+
+                headers = [
+                    'ID', 'Paciente', 'Edad', 'Sexo', 'Peso', 'Altura', 'IMC',
+                    'PA\n(Sist)', 'PA\n(Diast)', 'FC', 'Glu', 'Col',
+                    'SpO₂', 'Temp', 'Fum', 'Alc', 'Act.\nFís', 'Antec',
+                    'Diagnóstico', 'Riesgo', 'Fecha'
+                ]
+                table_data = [headers]
+
                 for p in pacientes_qs:
                     table_data.append([
                         str(p.id_paciente),
                         f"{p.nombres} {p.apellidos}",
-                        str(p.edad),
+                        str(p.edad or ''),
                         p.sexo or '',
-                        f"{round(p.imc, 1) if p.imc else 'N/A'}",
+                        fmt(p.peso, 1),
+                        fmt(p.altura, 2),
+                        fmt(p.imc, 1),
                         str(p.presion_sistolica or ''),
-                        str(p.glucosa or ''),
-                        f"{p.saturacion_oxigeno or ''}",
+                        str(p.presion_diastolica or ''),
+                        str(p.frecuencia_cardiaca or ''),
+                        fmt(p.glucosa, 1),
+                        fmt(p.colesterol, 1),
+                        fmt(p.saturacion_oxigeno, 1),
+                        fmt(p.temperatura, 1),
+                        fmtBool(p.fumador),
+                        fmtBool(p.consumo_alcohol),
+                        p.actividad_fisica or '',
+                        fmtBool(p.antecedentes_familiares),
+                        p.diagnostico_preliminar or '',
                         p.riesgo_enfermedad or '',
+                        p.fecha_consulta.strftime('%d/%m/%Y') if p.fecha_consulta else '',
                     ])
 
-                col_widths = [40, 120, 40, 50, 45, 45, 45, 45, 60]
+                col_widths = [28, 110, 26, 34, 32, 32, 32, 30, 30, 28, 30, 30, 30, 28, 26, 26, 34, 28, 90, 44, 52]
                 table = Table(table_data, colWidths=col_widths, repeatRows=1)
                 table.setStyle(TableStyle([
                     ('BACKGROUND', (0, 0), (-1, 0), HexColor('#3F2A52')),
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, 0), 7),
-                    ('FONTSIZE', (0, 1), (-1, -1), 7),
+                    ('FONTSIZE', (0, 0), (-1, 0), 6.5),
+                    ('FONTSIZE', (0, 1), (-1, -1), 6.5),
                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                    ('GRID', (0, 0), (-1, -1), 0.5, HexColor('#BEAEDB')),
+                    ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+                    ('ALIGN', (18, 0), (18, -1), 'LEFT'),
+                    ('GRID', (0, 0), (-1, -1), 0.4, HexColor('#BEAEDB')),
                     ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, HexColor('#F5F0FF')]),
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                 ]))
                 elements.append(table)
-                elements.append(Spacer(1, 0.3 * inch))
+                elements.append(Spacer(1, 0.2 * inch))
                 elements.append(Paragraph(
-                    f"Reporte generado el {datetime.now().strftime('%d/%m/%Y %H:%M')} - VITA Clinical Engine",
+                    f"Reporte generado el {datetime.now().strftime('%d/%m/%Y %H:%M')} — VITA Clinical Engine",
                     ParagraphStyle('Footer', parent=styles['Normal'], fontSize=7, textColor=HexColor('#999999'))
                 ))
 
