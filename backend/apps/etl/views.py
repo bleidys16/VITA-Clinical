@@ -371,8 +371,8 @@ class DashboardDataView(APIView):
             "kpis": {
                 "total_registros": ultimo_kpi.total_registros,
                 "pacientes_criticos": ultimo_kpi.pacientes_criticos,
-                "edad_promedio": edad_promedio,
-                "riesgo_promedio": riesgo_promedio
+                "pacientes_diabeticos": ultimo_kpi.pacientes_diabeticos,
+                "pacientes_hipertensos": ultimo_kpi.pacientes_hipertensos
             },
             "graficas": {
                 "barras_segmentacion": segmentacion_edad,

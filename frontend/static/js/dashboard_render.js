@@ -29,8 +29,8 @@ async function cargarDatosDashboard(token) {
         if (response.ok && !data.sistema_vacio) {
             document.getElementById('kpi-total').innerText = data.kpis.total_registros;
             document.getElementById('kpi-criticos').innerText = data.kpis.pacientes_criticos;
-            document.getElementById('kpi-edad-promedio').innerText = data.kpis.edad_promedio;
-            document.getElementById('kpi-riesgo').innerText = `${data.kpis.riesgo_promedio}%`;
+            document.getElementById('kpi-diabeticos').innerText = data.kpis.pacientes_diabeticos;
+            document.getElementById('kpi-hipertensos').innerText = data.kpis.pacientes_hipertensos;
 
             const ic = data.indicadores_clinicos || {};
             document.getElementById('ind-glucosa').innerText = ic.glucosa_promedio ? `${ic.glucosa_promedio} mg/dL` : '—';
@@ -50,8 +50,8 @@ async function cargarDatosDashboard(token) {
 function mostrarDashboardVacio() {
     document.getElementById('kpi-total').innerText = '0';
     document.getElementById('kpi-criticos').innerText = '0';
-    document.getElementById('kpi-edad-promedio').innerText = '0';
-    document.getElementById('kpi-riesgo').innerText = '0%';
+    document.getElementById('kpi-diabeticos').innerText = '0';
+    document.getElementById('kpi-hipertensos').innerText = '0';
     document.getElementById('ultimas-consultas').innerHTML = `
         <div class="text-center text-muted py-4">
             <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2 d-block" style="color:#6A4DD4;"></i>

@@ -16,7 +16,7 @@ class TrainModelView(APIView):
     def post(self, request, format=None):
         user = request.user
         if hasattr(user, 'perfil') and user.perfil.rol not in ('ADMIN', 'ANALISTA'):
-            return Response({"error": "No tenés permiso para entrenar el modelo."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"error": "No tienes permiso para entrenar el modelo."}, status=status.HTTP_403_FORBIDDEN)
         try:
             predictor = PredictorRiesgoService()
             reporte_metricas = predictor.entrenar_modelo()
@@ -80,7 +80,7 @@ class PrediccionRiesgoView(APIView):
         scaler_path = os.path.join(settings.BASE_DIR, 'media', 'modelos_ml', 'scaler_vita.pkl')
 
         if not os.path.exists(modelo_path):
-            return Response({"error": "No hay modelo entrenado. Ejecutá el pipeline ETL primero."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "No hay modelo entrenado. Ejecuta el pipeline ETL primero."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             modelo = joblib.load(modelo_path)
@@ -103,7 +103,7 @@ class PrediccionRiesgoView(APIView):
             fumador = 1 if request.data.get('fumador', '').lower() in ('true', '1', 'si', 'sí') else 0
         except (ValueError, TypeError) as e:
             campo_error = str(e).split("'")[1] if "'" in str(e) else "desconocido"
-            return Response({"error": f"Valor inválido en '{campo_error}'. Verificá los datos ingresados."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": f"Valor inválido en '{campo_error}'. Verifica los datos ingresados."}, status=status.HTTP_400_BAD_REQUEST)
 
         entrada = np.array([[edad, imc, glucosa, colesterol, presion_sistolica, frecuencia_cardiaca, fumador]])
         entrada_scaled = scaler.transform(entrada)

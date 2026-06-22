@@ -27,7 +27,7 @@
     .th-group.demografia { background: #1a0a33; color: #fff; }
     .th-group.antropometria { background: var(--vita-velvet-orchid); color: #fff; }
     .th-group.signos-vitales { background: var(--vita-majorelle-blue); color: #fff; }
-    .th-group.estilo-vida { background: var(--vita-bajo); color: #fff; }
+    .th-group.estilo-vida { background: var(--vita-pink-lavender); color: var(--vita-text-dark); }
     .th-group.diagnostico { background: var(--vita-alto); color: #fff; }
     .th-group.acciones { background: var(--vita-velvet-orchid); color: #fff; }
     .th-sub { font-size: 0.7rem; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6; white-space: nowrap; }
@@ -531,8 +531,7 @@
                     ${esAdmin ? `
                     <button class="btn btn-sm btn-outline-secondary border-0 me-1" onclick="abrirModalEditar(${p.id_paciente})" title="Editar"><i class="fa-solid fa-pen"></i></button>
                     <button class="btn btn-sm btn-outline-secondary border-0" onclick="eliminarPaciente(${p.id_paciente})" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>` : ''}
-                </td>`
-            `;
+                </td>`;
             tbody.appendChild(tr);
         });
     }

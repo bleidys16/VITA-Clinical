@@ -58,35 +58,42 @@ vita-clinical/
 │
 ├── frontend/                    ← Capa de presentación
 │   ├── templates/               ← login.html · base.html · dashboard.html
-│   │                            ← pacientes.html · ml_modeling.html
+│   │                            ← pacientes.html · analitica.html
+│   │                            ← ml_modeling.html · reportes.html
+│   │                            ← estadisticas.html · usuarios.html · etl.html
 │   └── static/
-│       ├── css/                 ← custom.css · dashboard.css
-│       └── js/                  ← auth.js · dashboard_render.js
-│                                ← etl_worker.js · pacientes.js
+│       ├── css/                 ← custom.css
+│       └── js/                  ← dashboard_render.js · charts.js
+│                                ← etl_worker.js
 │
-├── backend/                     ← Monolito Django (sirve frontend + API)
-│   ├── config/                  ← settings.py · urls.py · wsgi.py
+├── backend/                     ← Django (sirve frontend + API)
+│   ├── config/                  ← settings.py · urls.py · wsgi.py · celery.py
 │   └── apps/
 │       ├── authentication/      ← LoginView · ProfileUpdateView
 │       │                        ← permissions.py (roles: Admin/Medico/Analista)
-│       └── etl/
-│           ├── models.py        ← Paciente · HistorialETL · ETLTask
-│           │                    ← DashboardKPIs · MetricasModeloML · Perfil
-│           ├── services.py      ← PipelineETL (Extract · Transform · Load)
-│           ├── tasks.py         ← ejecutar_pipeline (threading, no Celery)
-│           ├── analytics.py     ← calcular_analitica_dataset · riesgo
-│           ├── clasificador_sexo.py ← Mapeo nombre → género
-│           ├── views.py         ← ReportesView · RunETLView · PacienteListView
-│           │                    ← DashboardKPIView · ML views
-│           └── management/commands/
-│               ├── ejecutar_etl.py
-│               ├── crear_usuarios_base.py
-│               └── corregir_sexo.py
-│   ├── build.sh                 ← Script de build para Render
-│   └── requirements.txt
+│       ├── etl/
+│       │   ├── models.py        ← Paciente · HistorialETL · ETLTask
+│       │   │                    ← DashboardKPIs · MetricasModeloML · Perfil
+│       │   ├── services.py      ← PipelineETL (Extract · Transform · Load)
+│       │   ├── tasks.py         ← ejecutar_pipeline (Celery task)
+│       │   ├── analytics.py     ← calcular_analitica_dataset · riesgo
+│       │   ├── clasificador_sexo.py ← Mapeo nombre → género
+│       │   ├── views.py         ← ReportesView · RunETLView · PacienteListView
+│       │   │                    ← DashboardDataView · ML views
+│       │   └── management/commands/
+│       │       ├── ejecutar_etl.py
+│       │       ├── crear_usuarios_base.py
+│       │       └── corregir_sexo.py
+│       ├── machine_learning/    ← TrainModelView · MetricasModeloMLView
+│       │                        ← PrediccionRiesgoView · PredictorRiesgoService
+│       ├── analytics/           ← DashboardKPIsView · DescriptiveAnalyticsView
+│       │                        ← IndicadoresClinicosService
+│       └── frontend/            ← DashboardView · PacientesView · etc.
 │
-└── datasets/
-    └── dataset_clinico_etl_1800_registros.xlsx
+├── build.sh                     ← Script de build para Render
+├── datasets/
+│   └── dataset_clinico_etl_1800_registros.xlsx
+└── requirements.txt
 ```
 
 **Flujo de datos:**
@@ -115,7 +122,8 @@ backend/
 ├── config/
 │   ├── settings.py              ← Configuración Django (DB, CORS, JWT, etc.)
 │   ├── urls.py                  ← Rutas raíz
-│   └── wsgi.py                  ← WSGI para Gunicorn
+│   ├── wsgi.py                  ← WSGI para Gunicorn
+│   └── celery.py                ← Configuración de Celery
 │
 ├── apps/
 │   ├── authentication/
@@ -124,29 +132,41 @@ backend/
 │   │   │                           EsAdminOMedico · EsAdminOAnalista
 │   │   └── serializers.py       ← Auth serializers con rol_display
 │   │
-│   └── etl/
-│       ├── models.py            ← Paciente (20+ campos clínicos)
-│       │                           HistorialETL · ETLTask · DashboardKPIs
-│       │                           MetricasModeloML · Perfil
-│       ├── serializers.py       ← Reportes serializers
-│       ├── services.py          ← PipelineETL (extract · transform · load)
-│       ├── tasks.py             ← ejecutar_pipeline (threading con ETLTask)
-│       ├── analytics.py         ← calcular_analitica_dataset
-│       ├── clasificador_sexo.py ← ~600 nombres mapeados a Femenino/Masculino
-│       ├── views.py             ← ReportesView · PacienteListView
-│       │                           RunETLView · ETLEstadoView
-│       │                           DashboardKPIView · PacienteCreateView
-│       │                           DashboardDataView · MLEntrenarView
-│       │                           MLMetricasView · MLPrediccionView
-│       ├── urls.py              ← Rutas de la app etl
-│       ├── permissions.py       ← Permisos de la app etl
-│       ├── admin.py
-│       └── management/commands/
-│           ├── ejecutar_etl.py
-│           ├── crear_usuarios_base.py
-│           └── corregir_sexo.py
+│   ├── etl/
+│   │   ├── models.py            ← Paciente (20+ campos clínicos)
+│   │   │                           HistorialETL · ETLTask · DashboardKPIs
+│   │   │                           MetricasModeloML · Perfil
+│   │   ├── serializers.py       ← Reportes serializers
+│   │   ├── services.py          ← PipelineETL (extract · transform · load)
+│   │   ├── tasks.py             ← ejecutar_pipeline (Celery task)
+│   │   ├── analytics.py         ← calcular_analitica_dataset
+│   │   ├── clasificador_sexo.py ← ~600 nombres mapeados a Femenino/Masculino
+│   │   ├── views.py             ← ReportesView · PacienteListView
+│   │   │                           RunETLView · ETLEstadoView
+│   │   │                           DashboardDataView · PacienteCreateView
+│   │   ├── urls.py              ← Rutas de la app etl
+│   │   ├── permissions.py       ← Permisos de la app etl
+│   │   ├── admin.py
+│   │   └── management/commands/
+│   │       ├── ejecutar_etl.py
+│   │       ├── crear_usuarios_base.py
+│   │       └── corregir_sexo.py
+│   │
+│   ├── machine_learning/
+│   │   ├── views.py             ← TrainModelView · MetricasModeloMLView
+│   │   │                           PrediccionRiesgoView · PrediccionPacienteView
+│   │   ├── services.py          ← PredictorRiesgoService (RandomForest)
+│   │   └── urls.py              ← Rutas de ML (/api/ml/...)
+│   │
+│   ├── analytics/
+│   │   ├── views.py             ← DashboardKPIsView · DescriptiveAnalyticsView
+│   │   │                           PacientesPorCriterioView
+│   │   ├── services.py          ← IndicadoresClinicosService
+│   │   └── urls.py              ← Rutas de analytics (/api/analytics/...)
+│   │
+│   └── frontend/
+│       └── views.py             ← DashboardView · PacientesView · etc.
 │
-├── build.sh                     ← Script de build
 ├── requirements.txt
 └── runtime.txt
 ```
@@ -259,7 +279,7 @@ Desde el dashboard → sección **ML Modeling** → botón **Entrenar modelo**.
 O vía API:
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/etl/ml/entrenar/ \
+curl -X POST http://127.0.0.1:8000/api/ml/train/ \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -317,25 +337,36 @@ Authorization: Bearer <jwt_token>
 |--------|----------|-------------|-------|
 | POST | `/api/auth/login/` | Login → devuelve JWT | Todos |
 | POST | `/api/auth/token/refresh/` | Renovar token | Todos |
-| GET | `/api/auth/me/` | Perfil del usuario autenticado | Todos |
-| PUT/PATCH | `/api/auth/profile/update/` | Actualizar perfil (solo ADMIN) | Admin |
-| GET | `/api/etl/dashboard/kpis/` | KPIs clínicos completos | Todos |
+| POST | `/api/auth/login/` | Login → devuelve JWT | Todos |
+| POST | `/api/auth/token/refresh/` | Renovar token | Todos |
+| GET | `/api/etl/auth/me/` | Perfil del usuario autenticado | Todos |
+| PUT/PATCH | `/api/etl/auth/profile/` | Actualizar perfil (solo ADMIN) | Admin |
+| GET | `/api/dashboard/kpis/` | KPIs clínicos completos | Todos |
+| GET | `/api/etl/analytics/dashboard/` | Dashboard detallado con gráficas | Todos |
 | GET | `/api/etl/pacientes/` | Lista paginada de pacientes | Todos |
 | GET | `/api/etl/reportes/?formato=pdf` | Exportar PDF/Excel/CSV | Todos |
 | POST | `/api/etl/run/` | Ejecutar pipeline ETL | Admin · Analista |
 | GET | `/api/etl/status/` | Estado de ejecución ETL | Admin · Analista |
-| GET | `/api/etl/historial/` | Historial de ejecuciones | Admin · Analista |
-| POST | `/api/etl/ml/entrenar/` | Entrenar RandomForest | Admin · Analista |
-| GET | `/api/etl/ml/metricas/` | Métricas del modelo | Admin · Analista |
-| POST | `/api/etl/ml/predecir/` | Predecir riesgo de un paciente | Admin · Analista |
-| GET | `/api/analytics/descriptive/` | Estadística descriptiva | Todos |
+| GET | `/api/etl/logs/` | Historial de ejecuciones | Admin · Analista |
+| DELETE | `/api/etl/reset/` | Reiniciar dataset | Admin |
+| POST | `/api/ml/train/` | Entrenar RandomForest | Admin · Analista |
+| GET | `/api/ml/model/metrics/` | Métricas del modelo | Admin · Analista |
+| POST | `/api/ml/predict/` | Predecir riesgo individual | Admin · Analista |
+| GET | `/api/ml/predict/paciente/<id>/` | Predicción por paciente | Admin · Analista |
+| GET | `/api/analytics/descriptiva/` | Estadística descriptiva | Todos |
 | GET | `/api/analytics/pacientes-por-criterio/` | Segmentación cruzada | Todos |
 | POST | `/api/etl/pacientes/create/` | Crear paciente manualmente | Admin |
+| PUT | `/api/etl/pacientes/<id>/update/` | Actualizar paciente | Admin |
+| DELETE | `/api/etl/pacientes/<id>/delete/` | Eliminar paciente | Admin |
+| GET | `/api/etl/usuarios/` | Listar usuarios | Admin |
+| POST | `/api/etl/usuarios/create/` | Crear usuario | Admin |
+| PUT | `/api/etl/usuarios/<id>/update/` | Actualizar usuario | Admin |
+| DELETE | `/api/etl/usuarios/<id>/delete/` | Eliminar usuario | Admin |
 
 ### Ejemplo — Predicción de riesgo
 
 ```http
-POST /api/etl/ml/predecir/
+POST /api/ml/predict/
 Authorization: Bearer <token>
 Content-Type: application/json
 
