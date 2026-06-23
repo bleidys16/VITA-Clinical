@@ -41,6 +41,35 @@ class Paciente(models.Model):
     def __str__(self):
         return f"{self.nombres} {self.apellidos} - ID: {self.id_paciente}"
 
+    def save(self, *args, **kwargs):
+        # Recalcular IMC e implicaciones clínicas
+        if self.peso and self.altura:
+            self.imc = round(self.peso / (self.altura ** 2), 2)
+            if self.imc < 18.5:
+                self.clasificacion_imc = 'Bajo peso'
+            elif self.imc < 25:
+                self.clasificacion_imc = 'Normal'
+            elif self.imc < 30:
+                self.clasificacion_imc = 'Sobrepeso'
+            else:
+                self.clasificacion_imc = 'Obesidad'
+
+        # Clasificación de riesgo clínico
+        sistolica = self.presion_sistolica or 0
+        glucosa = self.glucosa or 0
+        saturacion = self.saturacion_oxigeno or 100
+
+        es_clinicamente_critico = (sistolica > 180) or (glucosa > 300) or (saturacion < 85)
+
+        if es_clinicamente_critico:
+            self.riesgo_enfermedad = 'Crítico'
+        elif self.riesgo_enfermedad == 'Crítico':
+            self.riesgo_enfermedad = 'Alto'
+        elif not self.riesgo_enfermedad:
+            self.riesgo_enfermedad = 'Bajo'
+
+        super().save(*args, **kwargs)
+
 
 class HistorialETL(models.Model):
     objects = models.Manager()

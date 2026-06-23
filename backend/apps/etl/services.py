@@ -124,6 +124,22 @@ class PipelineETL:
             self.df['fecha_consulta'] = pd.to_datetime(self.df['fecha_consulta'], errors='coerce')
             self.df['fecha_consulta'] = self.df['fecha_consulta'].fillna(pd.Timestamp(datetime.now()))
 
+        # 10. Clasificación de riesgo clínico
+        col_sistolica = 'presión_sistólica' if 'presión_sistólica' in self.df.columns else 'presion_sistolica'
+        col_glucosa = 'glucosa'
+        col_saturacion = 'saturación_oxígeno' if 'saturación_oxígeno' in self.df.columns else 'saturacion_oxigeno'
+
+        if 'riesgo_enfermedad' not in self.df.columns:
+            self.df['riesgo_enfermedad'] = 'Bajo'
+
+        condicion_critica = (
+            (self.df[col_sistolica] > 180) |
+            (self.df[col_glucosa] > 300) |
+            (self.df[col_saturacion] < 85)
+        )
+        self.df.loc[(self.df['riesgo_enfermedad'] == 'Crítico') & ~condicion_critica, 'riesgo_enfermedad'] = 'Alto'
+        self.df.loc[condicion_critica, 'riesgo_enfermedad'] = 'Crítico'
+
         return len(self.df)
 
     def load(self):
